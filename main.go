@@ -17,36 +17,18 @@ type node struct {
 	err  error
 }
 
+func (n *node) String() string {
+	return n.name
+}
+
 func main() {
 	var graph dag.AcyclicGraph
-	graph.Add("all")
 
-	path, err := filepath.Abs("all.build")
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = os.Stat(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	cmd := exec.Command(path, "deps")
-	out, err := cmd.Output()
-	if err != nil {
+	if _, err := buildGraph(&graph, "all"); err != nil {
 		log.Fatal(err)
 	}
 
-	scanner := bufio.NewScanner(bytes.NewReader(out))
-	for scanner.Scan() {
-		dep := scanner.Text()
-		v := &node{name: dep}
-		graph.Add(v)
-		graph.Connect(dag.BasicEdge("all", v))
-	}
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	err = graph.Walk(func(v dag.Vertex) error {
+	err := graph.Walk(func(v dag.Vertex) error {
 		if node, ok := v.(string); ok && node == "all" {
 			return nil
 		}
@@ -60,6 +42,47 @@ func main() {
 	}
 }
 
+// buildGraph finds the dependencies for each target, adds them to the graph,
+// and connects an edge to the parent, recursively.
+func buildGraph(graph *dag.AcyclicGraph, name string) (*node, error) {
+	n := &node{name: name}
+	graph.Add(n)
+
+	path, err := filepath.Abs(fmt.Sprintf("%s.build", name))
+	if err != nil {
+		return n, err
+	}
+	_, err = os.Stat(path)
+	if err != nil {
+		if _, ok := err.(*os.PathError); ok {
+			return n, nil
+		}
+		return n, err
+	}
+	cmd := exec.Command(path, "deps")
+	cmd.Dir = filepath.Dir(path)
+	out, err := cmd.Output()
+	if err != nil {
+		return n, err
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(out))
+	for scanner.Scan() {
+		text := scanner.Text()
+		dep, err := buildGraph(graph, text)
+		if err != nil {
+			return n, err
+		}
+		graph.Connect(dag.BasicEdge(n, dep))
+	}
+
+	if err := scanner.Err(); err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
 func build(node *node) error {
 	fmt.Printf("build  %s\n", node.name)
 	if node.err != nil {
@@ -67,6 +90,13 @@ func build(node *node) error {
 	}
 	path, err := filepath.Abs(fmt.Sprintf("%s.build", node.name))
 	if err != nil {
+		return err
+	}
+	_, err = os.Stat(path)
+	if err != nil {
+		if _, ok := err.(*os.PathError); ok {
+			return nil
+		}
 		return err
 	}
 
