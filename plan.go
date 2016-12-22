@@ -20,7 +20,7 @@ type Target struct {
 // Plan is used to build a graph of all the targets and their dependencies.
 type Plan struct {
 	BuildFunc        func(*Target) error
-	DependenciesFunc func(string) ([]string, error)
+	DependenciesFunc func(*Target) ([]string, error)
 
 	graph *dag.AcyclicGraph
 }
@@ -39,17 +39,17 @@ func (p *Plan) Build(target string) (*Target, error) {
 	}
 	p.graph.Add(t)
 
-	deps, err := p.DependenciesFunc(target)
+	deps, err := p.DependenciesFunc(t)
 	if err != nil {
 		return t, fmt.Errorf("error getting dependencies for %s: %v", target, err)
 	}
 
-	for _, dep := range deps {
-		dept, err := p.Build(dep)
+	for _, d := range deps {
+		dep, err := p.Build(d)
 		if err != nil {
 			return t, err
 		}
-		p.graph.Connect(dag.BasicEdge(t, dept))
+		p.graph.Connect(dag.BasicEdge(t, dep))
 	}
 
 	return t, nil
@@ -63,8 +63,8 @@ func (p *Plan) Execute() error {
 	return err
 }
 
-func Dependencies(name string) ([]string, error) {
-	fullpath, err := filepath.Abs(name)
+func Dependencies(t *Target) ([]string, error) {
+	fullpath, err := filepath.Abs(t.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -76,9 +76,11 @@ func Dependencies(name string) ([]string, error) {
 		}
 		return nil, err
 	}
+	buildir := filepath.Dir(buildfile)
+
 	cmd := exec.Command(buildfile, "deps")
 	cmd.Stderr = os.Stderr
-	cmd.Dir = filepath.Dir(buildfile)
+	cmd.Dir = buildir
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -93,12 +95,10 @@ func Dependencies(name string) ([]string, error) {
 	scanner := bufio.NewScanner(bytes.NewReader(out))
 	for scanner.Scan() {
 		path := scanner.Text()
-		if filepath.Dir(buildfile) != wd {
-			p, err := filepath.Rel(wd, filepath.Join(filepath.Dir(buildfile), path))
-			if err != nil {
-				return deps, err
-			}
-			path = p
+		// Make all paths relative to the working directory.
+		path, err := filepath.Rel(wd, filepath.Join(filepath.Dir(buildfile), scanner.Text()))
+		if err != nil {
+			return deps, err
 		}
 		deps = append(deps, path)
 	}

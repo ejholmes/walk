@@ -9,8 +9,8 @@ import (
 
 func TestPlan(t *testing.T) {
 	plan := newPlan()
-	plan.DependenciesFunc = func(name string) ([]string, error) {
-		switch name {
+	plan.DependenciesFunc = func(t *Target) ([]string, error) {
+		switch t.Name {
 		case "all":
 			return []string{
 				"b/all",
@@ -26,7 +26,7 @@ func TestPlan(t *testing.T) {
 		case "b/hello.c":
 			return nil, nil
 		default:
-			return nil, fmt.Errorf("unknown %s", name)
+			return nil, fmt.Errorf("unknown %s", t.Name)
 		}
 	}
 	plan.BuildFunc = logVisit(t, func(t *Target) error {

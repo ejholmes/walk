@@ -1,4 +1,4 @@
-A universal build system, to build anything and everything. GIT for build systems.
+A fast, universal build system, to build anything and everything. GIT for build systems.
 
 Based on `make` and [redo](https://github.com/apenwarr/redo).
 

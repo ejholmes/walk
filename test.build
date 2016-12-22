@@ -3,6 +3,7 @@
 case $1 in
   deps)
     echo test/all
+    find . -type f -iname '*.go'
     ;;
   *)
 esac
