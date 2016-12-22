@@ -6,4 +6,5 @@ case $1 in
     find . -type f -iname '*.go'
     ;;
   *)
+    go test ./...
 esac
