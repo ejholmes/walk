@@ -11,6 +11,13 @@ import (
 	"github.com/ejholmes/redo/dag"
 )
 
+// The two arguments that .build executables will be called with, in the "plan"
+// or "build" phases.
+const (
+	ArgDeps  = "deps"
+	ArgBuild = "build"
+)
+
 // Target represents an individual node in the dependency graph.
 type Target struct {
 	// Name is the name of the target.
@@ -74,7 +81,7 @@ func Dependencies(target *Target) ([]string, error) {
 		return nil, nil
 	}
 
-	cmd := t.buildCommand("deps")
+	cmd := t.buildCommand(ArgDeps)
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -121,7 +128,7 @@ func BuildFile(t *fileTarget) error {
 	static := t.buildfile == ""
 
 	if !static {
-		cmd := t.buildCommand()
+		cmd := t.buildCommand(ArgBuild)
 		if err := cmd.Run(); err != nil {
 			return err
 		}
