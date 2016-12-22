@@ -4,7 +4,7 @@ deps="hello.c"
 
 case $1 in
   deps)
-    echo $3.c ;;
+    gcc -MM $3.c | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }" ;;
   build)
     gcc -Wall -o $2 -c $3.c ;;
 esac

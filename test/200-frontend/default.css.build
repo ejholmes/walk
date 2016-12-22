@@ -2,7 +2,9 @@
 
 case $1 in
   deps)
-    echo $3.sass
+    # Depend on all *.sass files, in case there are imports. In reality, it
+    # would be nice if sass would tell us what a files dependencies were here.
+    find . -type f -iname '*.sass'
     ;;
   *)
     sass $3.sass > $2
