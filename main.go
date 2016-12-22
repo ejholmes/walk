@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"hash"
 	"log"
 	"os"
@@ -28,6 +29,10 @@ func main() {
 	plan.DependenciesFunc = Dependencies
 	plan.BuildFunc = VerboseBuild
 
+	r, _ := os.Open(".hashes")
+	defer r.Close()
+	json.NewDecoder(r).Decode(&plan.Hashes)
+
 	if _, err := plan.Build(target); err != nil {
 		log.Fatal(err)
 	}
@@ -36,4 +41,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	w, err := os.Create(".hashes")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.Close()
+	json.NewEncoder(w).Encode(&plan.Hashes)
 }
