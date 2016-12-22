@@ -122,30 +122,16 @@ func VerboseBuild(target *Target) error {
 
 // BuildFile builds the fileTarget.
 func BuildFile(t *fileTarget) error {
-	// It's possible for a target to simply be a static file, in which case
-	// we don't need to perform a build. We do however want to ensure that
-	// it exists in this case.
-	static := t.buildfile == ""
-
-	if !static {
-		cmd := t.buildCommand(ArgBuild)
-		if err := cmd.Run(); err != nil {
-			return err
-		}
-	}
-
-	_, err := os.Stat(t.path)
-	if err != nil {
-		// If the file is generated, it's ok for the build to not
-		// produce an artifact, however, if the file is static, then we
-		// still want to return an error.
-		if _, ok := err.(*os.PathError); ok && !static {
-			return nil
-		}
+	if t.buildfile == "" {
+		// It's possible for a target to simply be a static file, in which case
+		// we don't need to perform a build. We do however want to ensure that
+		// it exists in this case.
+		_, err := os.Stat(t.path)
 		return err
 	}
 
-	return nil
+	cmd := t.buildCommand(ArgBuild)
+	return cmd.Run()
 }
 
 // fileTarget extends a Target that's represented by a file.
