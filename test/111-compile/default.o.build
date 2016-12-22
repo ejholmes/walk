@@ -1,0 +1,10 @@
+#!/bin/bash
+
+deps="hello.c"
+
+case $1 in
+  deps)
+    echo $3.c ;;
+  build)
+    gcc -Wall -o $2 -c $3.c ;;
+esac

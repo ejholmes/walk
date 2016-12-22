@@ -174,8 +174,11 @@ func newFileTarget(t *Target) (*fileTarget, error) {
 	}, nil
 }
 
-func (t *fileTarget) buildCommand(arg ...string) *exec.Cmd {
-	cmd := exec.Command(t.buildfile, arg...)
+func (t *fileTarget) buildCommand(subcommand string) *exec.Cmd {
+	ext := filepath.Ext(t.path)
+	name := filepath.Base(t.path)
+	nameWithoutExt := name[0 : len(name)-len(ext)]
+	cmd := exec.Command(t.buildfile, subcommand, name, nameWithoutExt)
 	cmd.Stderr = os.Stderr
 	cmd.Dir = t.buildir
 	return cmd
@@ -185,12 +188,22 @@ func (t *fileTarget) buildCommand(arg ...string) *exec.Cmd {
 // this target. If the target has no approriate .build file, then "" is
 // returned.
 func buildFile(path string) (string, error) {
-	p := fmt.Sprintf("%s.build", path)
-	_, err := os.Stat(p)
-	if err != nil {
-		if _, ok := err.(*os.PathError); ok {
-			return "", nil
+	dir := filepath.Dir(path)
+	name := filepath.Base(path)
+	ext := filepath.Ext(name)
+	try := []string{
+		name,
+		fmt.Sprintf("default%s", ext),
+	}
+
+	for _, n := range try {
+		fname := fmt.Sprintf("%s.build", n)
+		path := filepath.Join(dir, fname)
+		_, err := os.Stat(path)
+		if err == nil {
+			return path, nil
 		}
 	}
-	return p, err
+
+	return "", nil
 }
