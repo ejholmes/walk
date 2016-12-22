@@ -3,10 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"crypto/sha1"
 	"fmt"
-	"hash"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,9 +15,6 @@ import (
 type Target struct {
 	// Name is the name of the target.
 	Name string
-
-	// Hash is a hash of all of the content that gets built (if any)
-	Hash hash.Hash
 }
 
 // Plan is used to build a graph of all the targets and their dependencies.
@@ -64,13 +58,10 @@ func (p *Plan) Build(target string) (*Target, error) {
 func (p *Plan) Execute() error {
 	err := p.graph.Walk(func(v dag.Vertex) error {
 		t := v.(*Target)
-		t.Hash = newHash()
 		return p.BuildFunc(t)
 	})
 	return err
 }
-
-var newHash = sha1.New
 
 func Dependencies(name string) ([]string, error) {
 	fullpath, err := filepath.Abs(name)
@@ -118,7 +109,7 @@ func Dependencies(name string) ([]string, error) {
 func VerboseBuild(t *Target) error {
 	err := Build(t)
 	if err == nil {
-		fmt.Printf("build  %s (%x)\n", t.Name, t.Hash.Sum(nil)[0:4])
+		fmt.Printf("build  %s\n", t.Name)
 	}
 	return err
 }
@@ -149,14 +140,6 @@ func Build(t *Target) error {
 		if _, ok := err.(*os.PathError); ok {
 			return nil
 		}
-		return err
-	}
-	f, err := os.Open(fullpath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	if _, err := io.Copy(t.Hash, f); err != nil {
 		return err
 	}
 	return nil

@@ -1,22 +1,9 @@
 package main
 
 import (
-	"hash"
 	"log"
 	"os"
 )
-
-type node struct {
-	name string
-	err  error
-
-	hash    hash.Hash
-	dephash hash.Hash
-}
-
-func (n *node) String() string {
-	return n.name
-}
 
 func main() {
 	target := "all"

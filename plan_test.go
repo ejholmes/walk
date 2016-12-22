@@ -32,10 +32,8 @@ func TestPlan(t *testing.T) {
 	plan.BuildFunc = logVisit(t, func(t *Target) error {
 		switch t.Name {
 		case "b/hello.c":
-			t.Hash.Write([]byte("int main"))
 			return nil
 		case "b/hello":
-			t.Hash.Write([]byte("some binary"))
 			return nil
 		case "b/all":
 			return nil
@@ -55,7 +53,7 @@ func TestPlan(t *testing.T) {
 func logVisit(t *testing.T, f func(*Target) error) func(*Target) error {
 	return func(target *Target) error {
 		err := f(target)
-		t.Logf("Visited %s (%x)", target.Name, target.Hash.Sum(nil))
+		t.Logf("Visited %s", target.Name)
 		return err
 	}
 }
