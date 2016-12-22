@@ -15,7 +15,7 @@ At the core of XXX is a Directed Acyclic Graph (DAG). DAG's are a magical data s
 
 ## Targets
 
-Similar to make, XXX has the concept of "targets". A target is simply a file that can be built from some dependencies. However, unlike make (and like redo), targets are described as executable files instead of in a Makefile. This provides for unlimited flexibility to define how something is built, and what it depends on.
+Similar to make, XXX has the concept of "targets". A target is simply a file that can be built from some dependencies. However, unlike make (and like redo), targets are described as executable files instead of in a Makefile. This provides for unlimited flexibility to define how something is built, and what it depends on, by composing existing tools.
 
 For example, if I wanted to describe how to build a binary called "hello" from "hello.c", I could do so with a bash script called "hello.build":
 
