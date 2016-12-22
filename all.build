@@ -2,7 +2,7 @@
 
 case $1 in
   deps)
-    echo bin/redo
+    echo bin/all
     echo test
     ;;
   *)

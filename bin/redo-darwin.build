@@ -1,0 +1,8 @@
+#!/bin/bash
+
+case $1 in
+  deps)
+    ./redo.build deps ;;
+  *)
+    env GOOS=darwin ./redo.build
+esac
