@@ -2,7 +2,7 @@ A fast, universal build system, to build anything and everything.
 
 Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 
-## What can I build?
+## What can it build?
 
 * Frontend applications.
 * C++ applications.
@@ -44,7 +44,7 @@ build  hello
 
 XXX has two phases:
 
-1. **Plan Phase**: In this phase, XXX executes all the `.build` files with `deps` as the first argument. `.build` files are expected to print a newline delimited list of files that the target depends on. Internally, XXX builds a graph of all of the targets and their dependencies.
+1. **Plan Phase**: In this phase, XXX executes all the `.build` files with `deps` as the first argument. `.build` files are expected to print a newline delimited list of files that the target depends on, relative to the `.build` file. Internally, XXX builds a graph of all of the targets and their dependencies.
 2. **Build Phase**: In this phase, XXX executes all of the `.build` files with `build` as the first argument. `.build` files are expected to build the given target.
 
 By separating these phases, XXX can build a compact dependency graph, and perform fast parallel builds.
