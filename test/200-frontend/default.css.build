@@ -1,0 +1,9 @@
+#!/bin/bash
+
+case $1 in
+  deps)
+    echo $3.sass
+    ;;
+  *)
+    sass $3.sass > $2
+esac

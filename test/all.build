@@ -4,6 +4,7 @@ case $1 in
   deps)
     echo 110-compile/all
     echo 111-compile/all
+    echo 200-frontend/all
     ;;
   *)
 esac

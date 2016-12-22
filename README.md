@@ -4,7 +4,7 @@ Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 
 ## What can it build?
 
-* Frontend applications.
+* Frontend applications (e.g. sass -> css -> compress).
 * C++ applications.
 * Infrastructure.
 * Anything that has dependencies.

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+case $1 in
+  deps)
+    echo layout.css
+    echo header.css
+    ;;
+  *)
+    cat layout.css > application.css
+    cat header.css >> application.css
+esac
