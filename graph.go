@@ -3,7 +3,7 @@ package main
 import (
 	"sync"
 
-	"github.com/ejholmes/redo/dag"
+	"github.com/ejholmes/build/dag"
 )
 
 // Graph wraps a graph of targets.

@@ -2,9 +2,9 @@
 
 case $1 in
   deps)
-    echo redo
-    echo redo-linux
-    echo redo-darwin
+    echo build
+    echo build-linux
+    echo build-darwin
     ;;
   *)
 esac

@@ -3,6 +3,6 @@
 case $1 in
   deps)
     echo test/clean ;;
-  build)
-    rm -rf bin/redo ;;
+  *)
+    rm -rf bin/build ;;
 esac

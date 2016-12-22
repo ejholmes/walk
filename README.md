@@ -39,10 +39,10 @@ case $1 in
 esac
 ```
 
-Executing `redo hello` will build the target:
+Executing `build hello` will build the target:
 
 ```$
-$ redo hello
+$ build hello
 build  hello
 ```
 
