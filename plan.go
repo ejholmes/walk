@@ -100,21 +100,21 @@ func Dependencies(target *Target) ([]string, error) {
 	return deps, scanner.Err()
 }
 
-func VerboseBuild(t *Target) error {
-	err := Build(t)
-	if err == nil {
-		fmt.Printf("build  %s\n", t.Name)
-	}
-	return err
-}
-
-// Build builds the target.
-func Build(target *Target) error {
+func VerboseBuild(target *Target) error {
 	t, err := newFileTarget(target)
 	if err != nil {
 		return err
 	}
 
+	err = BuildFile(t)
+	if err == nil && t.buildfile != "" {
+		fmt.Printf("build  %s\n", t.Name)
+	}
+	return err
+}
+
+// BuildFile builds the fileTarget.
+func BuildFile(t *fileTarget) error {
 	// It's possible for a target to simply be a static file, in which case
 	// we don't need to perform a build. We do however want to ensure that
 	// it exists in this case.
@@ -127,7 +127,7 @@ func Build(target *Target) error {
 		}
 	}
 
-	_, err = os.Stat(t.path)
+	_, err := os.Stat(t.path)
 	if err != nil {
 		// If the file is generated, it's ok for the build to not
 		// produce an artifact, however, if the file is static, then we
