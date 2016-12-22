@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 )
 
@@ -15,12 +15,16 @@ func main() {
 	plan.DependenciesFunc = Dependencies
 	plan.BuildFunc = VerboseBuild
 
-	if _, err := plan.Build(target); err != nil {
-		log.Fatal(err)
-	}
+	_, err := plan.Build(target)
+	must(err)
 
-	if err := plan.Execute(); err != nil {
-		log.Fatal(err)
-	}
+	must(plan.Execute())
 
+}
+
+func must(err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
 }

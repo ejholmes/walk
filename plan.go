@@ -114,30 +114,40 @@ func VerboseBuild(t *Target) error {
 	return err
 }
 
+// Build builds the target.
 func Build(t *Target) error {
 	fullpath, err := filepath.Abs(t.Name)
 	if err != nil {
 		return err
 	}
+	// It's possible for a target to simply be a static file, in which case
+	// we don't need to perform a build. We do however want to ensure that
+	// it exists in this case.
+	static := false
 	buildfile := fmt.Sprintf("%s.build", fullpath)
 	_, err = os.Stat(buildfile)
 	if err != nil {
-		if _, ok := err.(*os.PathError); ok {
-			return nil
+		if _, ok := err.(*os.PathError); !ok {
+			return err
 		}
-		return err
+		static = true
 	}
 
-	cmd := exec.Command(buildfile)
-	cmd.Stderr = os.Stderr
-	cmd.Dir = filepath.Dir(buildfile)
-	if err := cmd.Run(); err != nil {
-		return err
+	if !static {
+		cmd := exec.Command(buildfile)
+		cmd.Stderr = os.Stderr
+		cmd.Dir = filepath.Dir(buildfile)
+		if err := cmd.Run(); err != nil {
+			return err
+		}
 	}
 
 	_, err = os.Stat(fullpath)
 	if err != nil {
-		if _, ok := err.(*os.PathError); ok {
+		// If the file is generated, it's ok for the build to not
+		// produce an artifact, however, if the file is static, then we
+		// still want to return an error.
+		if _, ok := err.(*os.PathError); ok && !static {
 			return nil
 		}
 		return err

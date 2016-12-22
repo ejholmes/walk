@@ -2,8 +2,7 @@
 
 case $1 in
   deps)
-    echo bin/redo
-    echo test
+    echo 110-compile/all
     ;;
   *)
 esac
