@@ -56,6 +56,10 @@ func (g *Graph) Walk(fn func(*Target) error) error {
 	})
 }
 
+func (g *Graph) String() string {
+	return g.dag.String()
+}
+
 func (g *Graph) target(name string) *Target {
 	return g.m[name]
 }

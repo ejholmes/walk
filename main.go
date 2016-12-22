@@ -19,7 +19,6 @@ func main() {
 	must(err)
 
 	must(plan.Execute())
-
 }
 
 func must(err error) {
