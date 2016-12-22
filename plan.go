@@ -97,7 +97,7 @@ func Dependencies(target *Target) ([]string, error) {
 	for scanner.Scan() {
 		path := scanner.Text()
 		// Make all paths relative to the working directory.
-		path, err := filepath.Rel(wd, filepath.Join(filepath.Dir(t.buildfile), scanner.Text()))
+		path, err := filepath.Rel(wd, filepath.Join(t.buildir, scanner.Text()))
 		if err != nil {
 			return deps, err
 		}
@@ -163,7 +163,7 @@ func newFileTarget(t *Target) (*fileTarget, error) {
 
 	var buildir string
 	if buildfile != "" {
-		buildir = filepath.Dir(buildfile)
+		buildir = filepath.Dir(path)
 	}
 
 	return &fileTarget{
@@ -192,13 +192,13 @@ func buildFile(path string) (string, error) {
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	try := []string{
-		name,
-		fmt.Sprintf("default%s", ext),
+		filepath.Join(".build", name),
+		fmt.Sprintf("%s.build", name),
+		fmt.Sprintf("default%s.build", ext),
 	}
 
 	for _, n := range try {
-		fname := fmt.Sprintf("%s.build", n)
-		path := filepath.Join(dir, fname)
+		path := filepath.Join(dir, n)
 		_, err := os.Stat(path)
 		if err == nil {
 			return path, nil
