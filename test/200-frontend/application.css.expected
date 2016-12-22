@@ -1,0 +1,7 @@
+body {
+  color: #000; }
+#header {
+  color: #fff; }
+
+body.firefox .header:before {
+  content: "Hi, Firefox users!"; }

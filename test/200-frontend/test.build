@@ -3,7 +3,7 @@
 case $1 in
   deps)
     echo application.css
-    echo test
     ;;
   *)
+    cmp application.css application.css.expected
 esac

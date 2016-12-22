@@ -7,8 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/ejholmes/redo/dag"
 )
 
 // The two arguments that .build executables will be called with, in the "plan"
@@ -29,13 +27,12 @@ type Plan struct {
 	BuildFunc        func(*Target) error
 	DependenciesFunc func(*Target) ([]string, error)
 
-	graph *dag.AcyclicGraph
+	graph *Graph
 }
 
 func newPlan() *Plan {
-	var graph dag.AcyclicGraph
 	return &Plan{
-		graph: &graph,
+		graph: newGraph(),
 	}
 }
 
@@ -44,7 +41,11 @@ func (p *Plan) Build(target string) (*Target, error) {
 	t := &Target{
 		Name: target,
 	}
-	p.graph.Add(t)
+
+	if t := p.graph.Add(t); t != nil {
+		// If this target already exists in the graph, nothing to do.
+		return t, nil
+	}
 
 	deps, err := p.DependenciesFunc(t)
 	if err != nil {
@@ -56,15 +57,14 @@ func (p *Plan) Build(target string) (*Target, error) {
 		if err != nil {
 			return t, err
 		}
-		p.graph.Connect(dag.BasicEdge(t, dep))
+		p.graph.Connect(t, dep)
 	}
 
 	return t, nil
 }
 
 func (p *Plan) Execute() error {
-	err := p.graph.Walk(func(v dag.Vertex) error {
-		t := v.(*Target)
+	err := p.graph.Walk(func(t *Target) error {
 		return p.BuildFunc(t)
 	})
 	return err
