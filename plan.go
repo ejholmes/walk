@@ -193,9 +193,10 @@ func buildFile(path string) (string, error) {
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	try := []string{
-		filepath.Join(".build", name),
-		fmt.Sprintf("%s.build", name),
-		fmt.Sprintf("default%s.build", ext),
+		filepath.Join(".build", name),           // .build/hello.o
+		fmt.Sprintf("%s.build", name),           // hello.o.build
+		filepath.Join(".build/default%s", name), // .build/default.o
+		fmt.Sprintf("default%s.build", ext),     // default.o.build
 	}
 
 	for _, n := range try {
