@@ -1,4 +1,4 @@
-A fast, universal build system, to build anything and everything.
+A fast, universal build and task system, to build anything and everything.
 
 Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 
@@ -17,7 +17,7 @@ Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 
 ## DAG
 
-At the core of XXX is a Directed Acyclic Graph (DAG). DAG's are a magical data structure that allow you to easily express dependency trees. You'll find DAG's everywhere; in GIT, languages, infrastructure tools, etc. XXX tries to generalize build systems based on top of this solid primitive.
+At the core of XXX is a Directed Acyclic Graph (DAG). DAG's are a magical data structure that allow you to easily express dependency trees. You'll find DAG's everywhere; in GIT, languages, infrastructure tools, etc. **builds** provides a general UNIX utility to express a DAG as a set of executable files that depend on each other.
 
 ## Targets
 
