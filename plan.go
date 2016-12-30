@@ -36,8 +36,8 @@ func newPlan() *Plan {
 	}
 }
 
-// Build builds the graph, starting with the given target.
-func (p *Plan) Build(target string) (*Target, error) {
+// Plan builds the graph, starting with the given target.
+func (p *Plan) Plan(target string) (*Target, error) {
 	t := &Target{
 		Name: target,
 	}
@@ -53,7 +53,7 @@ func (p *Plan) Build(target string) (*Target, error) {
 	}
 
 	for _, d := range deps {
-		dep, err := p.Build(d)
+		dep, err := p.Plan(d)
 		if err != nil {
 			return t, err
 		}
@@ -63,7 +63,8 @@ func (p *Plan) Build(target string) (*Target, error) {
 	return t, nil
 }
 
-func (p *Plan) Execute() error {
+// Build executes the plan.
+func (p *Plan) Build() error {
 	err := p.graph.Walk(func(t *Target) error {
 		return p.BuildFunc(t)
 	})

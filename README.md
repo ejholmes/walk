@@ -54,3 +54,11 @@ build  hello
 2. **Build Phase**: In this phase, **build** executes all of the `.build` files with `build` as the first argument. `.build` files are expected to build the given target.
 
 By separating these phases, **build** can build a compact dependency graph, and perform fast parallel builds.
+
+## Arguments
+
+When **build** executes a `.build` file, it executes it with the following positional arguments:
+
+1. `$1`: The phase (**deps** or **build**).
+2. `$2`: The name of the target to build (e.g. `hello.o`).
+3. `$3`: The name of the target, without the file extension (e.g. `hello`).

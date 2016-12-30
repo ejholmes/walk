@@ -43,10 +43,10 @@ func TestPlan(t *testing.T) {
 		return nil
 	})
 
-	_, err := plan.Build("all")
+	_, err := plan.Plan("all")
 	assert.NoError(t, err)
 
-	err = plan.Execute()
+	err = plan.Build()
 	assert.NoError(t, err)
 }
 

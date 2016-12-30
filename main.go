@@ -15,10 +15,10 @@ func main() {
 	plan.DependenciesFunc = Dependencies
 	plan.BuildFunc = VerboseBuild
 
-	_, err := plan.Build(target)
+	_, err := plan.Plan(target)
 	must(err)
 
-	must(plan.Execute())
+	must(plan.Build())
 }
 
 func must(err error) {
