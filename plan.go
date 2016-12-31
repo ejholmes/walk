@@ -108,6 +108,19 @@ func Dependencies(target *Target) ([]string, error) {
 	return deps, scanner.Err()
 }
 
+type fileBuildError struct {
+	target *fileTarget
+	err    error
+}
+
+func (e *fileBuildError) Error() string {
+	prefix := fmt.Sprintf("error performing %s", e.target.Name)
+	if e.target.buildfile != "" {
+		prefix += fmt.Sprintf(" (using %s)", e.target.buildfile)
+	}
+	return fmt.Sprintf("%s: %v", prefix, e.err)
+}
+
 func VerboseBuild(target *Target) error {
 	t, err := newFileTarget(target)
 	if err != nil {
@@ -115,6 +128,9 @@ func VerboseBuild(target *Target) error {
 	}
 
 	err = BuildFile(t)
+	if err != nil {
+		return &fileBuildError{t, err}
+	}
 	if err == nil && t.buildfile != "" {
 		fmt.Printf("%s\n", t.Name)
 	}

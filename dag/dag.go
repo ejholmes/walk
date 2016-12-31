@@ -6,8 +6,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/hashicorp/go-multierror"
 )
 
 // AcyclicGraph is a specialization of Graph that cannot have cycles. With
@@ -130,7 +128,7 @@ func (g *AcyclicGraph) Validate() error {
 				cycleStr[j] = VertexName(vertex)
 			}
 
-			err = multierror.Append(err, fmt.Errorf(
+			err = appendErrors(err, fmt.Errorf(
 				"Cycle: %s", strings.Join(cycleStr, ", ")))
 		}
 	}
@@ -138,7 +136,7 @@ func (g *AcyclicGraph) Validate() error {
 	// Look for cycles to self
 	for _, e := range g.Edges() {
 		if e.Source() == e.Target() {
-			err = multierror.Append(err, fmt.Errorf(
+			err = appendErrors(err, fmt.Errorf(
 				"Self reference: %s", VertexName(e.Source())))
 		}
 	}
@@ -237,7 +235,7 @@ func (g *AcyclicGraph) Walk(cb WalkFunc) error {
 			defer errLock.Unlock()
 			if err != nil {
 				errMap[v] = true
-				errs = multierror.Append(errs, err)
+				errs = appendErrors(errs, err)
 			}
 		}(v, ourCh, readyCh)
 	}
