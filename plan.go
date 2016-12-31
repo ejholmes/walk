@@ -116,7 +116,7 @@ func VerboseBuild(target *Target) error {
 
 	err = BuildFile(t)
 	if err == nil && t.buildfile != "" {
-		fmt.Printf("build  %s\n", t.Name)
+		fmt.Printf("%s\n", t.Name)
 	}
 	return err
 }
@@ -186,17 +186,17 @@ func (t *fileTarget) buildCommand(subcommand string) *exec.Cmd {
 }
 
 // buildFile returns the path to the .build file that should be used to build
-// this target. If the target has no approriate .build file, then "" is
+// this target. If the target has no appropriate .build file, then "" is
 // returned.
 func buildFile(path string) (string, error) {
 	dir := filepath.Dir(path)
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	try := []string{
-		filepath.Join(".build", name),           // .build/hello.o
-		fmt.Sprintf("%s.build", name),           // hello.o.build
-		filepath.Join(".build/default%s", name), // .build/default.o
-		fmt.Sprintf("default%s.build", ext),     // default.o.build
+		filepath.Join(".build", name),                          // .build/hello.o
+		fmt.Sprintf("%s.build", name),                          // hello.o.build
+		filepath.Join(".build", fmt.Sprintf("default%s", ext)), // .build/default.o
+		fmt.Sprintf("default%s.build", ext),                    // default.o.build
 	}
 
 	for _, n := range try {
