@@ -1,8 +1,5 @@
 #!/bin/bash
 
-case $1 in
-  deps)
-    ./.walk/walk deps ;;
-  *)
-    env GOOS=linux ./.walk/walk
-esac
+export GOOS=linux
+
+exec .walk/walk $@

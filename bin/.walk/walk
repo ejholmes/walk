@@ -4,5 +4,5 @@ case $1 in
   deps)
     find . -type f -iname '*.go';;
   *)
-    go build -o walk ..;;
+    go build -o $3 ..;;
 esac
