@@ -1,0 +1,6 @@
+#!/bin/bash
+
+case $1 in
+  *)
+    rm -rf *.o hello
+esac

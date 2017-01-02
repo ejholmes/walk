@@ -1,10 +1,21 @@
 #!/bin/bash
 
-deps="hello.c"
+SOURCE=$3.c
+
+deps() {
+    gcc -MM $SOURCE | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
+}
 
 case $1 in
   deps)
-    gcc -MM $3.c | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }" ;;
+    deps ;;
   build)
-    gcc -Wall -o $2 -c $3.c ;;
+    object=$2
+    # If any of the dependencies are newer than the object file, build it.
+    for d in $(deps); do
+      if [ "$d" -nt $object ]; then
+        gcc -Wall -o $object -c $SOURCE
+        exit
+      fi
+    done
 esac
