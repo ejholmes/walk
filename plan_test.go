@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"io"
 	"strings"
 	"testing"
 
@@ -26,4 +28,19 @@ func TestPlan_CyclicDependencies(t *testing.T) {
 func clean(t testing.TB) {
 	err := Exec("test/clean")
 	assert.NoError(t, err)
+}
+
+func TestPrefixWriter(t *testing.T) {
+	w := new(bytes.Buffer)
+	pw := &prefixWriter{w: w, prefix: []byte("test  ")}
+
+	io.WriteString(pw, `hello
+
+world
+`)
+
+	assert.Equal(t, `test  hello
+test  
+test  world
+`, w.String())
 }

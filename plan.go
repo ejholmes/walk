@@ -238,8 +238,8 @@ func (t *FileTarget) Dependencies() ([]string, error) {
 func (t *FileTarget) ruleCommand(subcommand string) *exec.Cmd {
 	name := filepath.Base(t.path)
 	cmd := exec.Command(t.walkfile, subcommand, name)
-	cmd.Stdout = t.stdout
-	cmd.Stderr = t.stderr
+	cmd.Stdout = prefix(t.stdout, fmt.Sprintf("%s\t", t.Name()))
+	cmd.Stderr = prefix(t.stderr, fmt.Sprintf("%s\t", t.Name()))
 	cmd.Dir = t.dir
 	return cmd
 }
@@ -282,4 +282,39 @@ func walkFile(path string) (string, error) {
 	}
 
 	return "", nil
+}
+
+type prefixWriter struct {
+	prefix []byte
+	w      io.Writer
+	b      []byte
+}
+
+func prefix(w io.Writer, prefix string) *prefixWriter {
+	return &prefixWriter{
+		prefix: []byte(prefix),
+		w:      w,
+	}
+}
+
+func (w *prefixWriter) Write(b []byte) (int, error) {
+	p := b
+	for {
+		i := bytes.IndexByte(p, '\n')
+
+		if i >= 0 {
+			w.b = append(w.b, p[:i+1]...)
+			p = p[i+1:]
+			_, err := w.w.Write(append(w.prefix, w.b...))
+			w.b = nil
+			if err != nil {
+				return len(b), err
+			}
+			continue
+		}
+
+		w.b = append(w.b, p...)
+		break
+	}
+	return len(b), nil
 }
