@@ -1,4 +1,4 @@
-A fast, universal build and task system, for UNIX like systems.
+A fast, universal build and task execution system, for UNIX like systems.
 
 Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 
