@@ -1,0 +1,2 @@
+# depends: base
+FROM walk/base

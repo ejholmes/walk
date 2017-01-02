@@ -5,6 +5,7 @@ case $1 in
     echo 110-compile/all
     echo 111-compile/all
     echo 200-frontend/all
+    echo 300-docker/all
     ;;
   *)
 esac
