@@ -1,8 +1,0 @@
-#!/bin/bash
-
-case $1 in
-  deps)
-    ./.build/build deps ;;
-  *)
-    env GOOS=darwin ./.build/build
-esac

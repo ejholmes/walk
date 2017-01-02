@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-// The two arguments that .build executables will be called with, in the "plan"
+// The two arguments that .walk executables will be called with, in the "plan"
 // or "build" phases.
 const (
 	ArgDeps  = "deps"
@@ -209,10 +209,10 @@ func buildFile(path string) (string, error) {
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
 	try := []string{
-		filepath.Join(".build", name),                          // .build/hello.o
-		fmt.Sprintf("%s.build", name),                          // hello.o.build
-		filepath.Join(".build", fmt.Sprintf("default%s", ext)), // .build/default.o
-		fmt.Sprintf("default%s.build", ext),                    // default.o.build
+		filepath.Join(".walk", name),                          // .walk/hello.o
+		fmt.Sprintf("%s.walk", name),                          // hello.o.walk
+		filepath.Join(".walk", fmt.Sprintf("default%s", ext)), // .walk/default.o
+		fmt.Sprintf("default%s.walk", ext),                    // default.o.walk
 	}
 
 	for _, n := range try {
