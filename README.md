@@ -36,7 +36,7 @@ dep="hello.c"
 case $1 in
   dep)
     echo $dep ;;
-  build)
+  exec)
     gcc -Wall -o hello $dep
 esac
 ```
@@ -55,7 +55,7 @@ This is the core of how walk works, and you can use it to build up very large de
 **walk** has two phases:
 
 1. **Plan Phase**: In this phase, **walk** executes all the `.walk` files with `deps` as the first argument. `.walk` files are expected to print a newline delimited list of files that the target depends on, relative to the target. Internally, **walk** builds a graph of all of the targets and their dependencies.
-2. **Build Phase**: In this phase, **walk** executes all of the `.walk` files with `build` as the first argument. `.walk` files are expected to build the given target.
+2. **Exec Phase**: In this phase, **walk** executes all of the `.walk` files with `exec` as the first argument. `.walk` files are expected to build the given target.
 
 By separating these phases, **walk** can build a compact dependency graph, and perform fast parallel builds.
 
@@ -70,7 +70,7 @@ When **build** executes a `.build` file, it executes it with the following posit
 
 By design, walk does not try to perform any kind of conditional execution of targets (e.g. if the file modification time has changed, like make). Conditional execution is left to the `.walk` file in the **build** phase. For example, if I wanted to only build `hello` if `hello.c` has changed, I can do so like so:
 
-```
+```bash
 #!/bin/bash
 
 dep="hello.c"
@@ -78,7 +78,7 @@ dep="hello.c"
 case $1 in
   deps)
     echo $dep ;;
-  build)
+  exec)
     if [ "$dep" -nt "hello" ];
       gcc -Wall -o hello $deps
     then

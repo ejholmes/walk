@@ -10,10 +10,10 @@ import (
 )
 
 // The two arguments that .walk executables will be called with, in the "plan"
-// or "build" phases.
+// or "exec" phases.
 const (
-	ArgDeps  = "deps"
-	ArgBuild = "build"
+	ArgDeps = "deps"
+	ArgExec = "exec"
 )
 
 // Target represents an individual node in the dependency graph.
@@ -160,7 +160,7 @@ func (t *FileTarget) Exec() error {
 		return err
 	}
 
-	cmd := t.buildCommand(ArgBuild)
+	cmd := t.buildCommand(ArgExec)
 	return cmd.Run()
 }
 

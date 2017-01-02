@@ -9,7 +9,7 @@ deps() {
 case $1 in
   deps)
     deps ;;
-  build)
+  exec)
     object=$2
     # If any of the dependencies are newer than the object file, build it.
     for d in $(deps); do

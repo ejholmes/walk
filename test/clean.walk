@@ -4,6 +4,6 @@ case $1 in
   deps)
     echo 111-compile/clean
     ;;
-  build)
+  exec)
     rm -rf **/*.o
 esac
