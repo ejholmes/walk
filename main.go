@@ -14,13 +14,11 @@ func main() {
 	}
 
 	plan := newPlan()
-	plan.DependenciesFunc = Dependencies
-	plan.BuildFunc = VerboseBuild
 
 	_, err := plan.Plan(target)
 	must(err)
 
-	must(plan.Build())
+	must(plan.Exec())
 }
 
 func must(err error) {
