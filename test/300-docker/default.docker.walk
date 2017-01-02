@@ -1,10 +1,12 @@
 #!/bin/bash
 
+NAME=${2%.docker}
+
 case $1 in
   deps)
-    echo Dockerfile.$3
-    cat Dockerfile.$3 | awk '/# depends: / { print $3 ".docker" }'
+    echo Dockerfile.$NAME
+    cat Dockerfile.$NAME | awk '/# depends: / { print $3 ".docker" }'
     ;;
   *)
-    docker build -t walk/$3 -f Dockerfile.$3 .
+    docker build -t walk/$NAME -f Dockerfile.$NAME .
 esac

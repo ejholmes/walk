@@ -65,7 +65,6 @@ When **build** executes a `.build` file, it executes it with the following posit
 
 1. `$1`: The phase (**deps** or **build**).
 2. `$2`: The name of the target to build (e.g. `hello.o`).
-3. `$3`: The name of the target, without the file extension (e.g. `hello`).
 
 ### Conditional Execution
 

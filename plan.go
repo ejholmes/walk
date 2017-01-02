@@ -194,8 +194,7 @@ func newFileTarget(t *Target) (*fileTarget, error) {
 func (t *fileTarget) buildCommand(subcommand string) *exec.Cmd {
 	ext := filepath.Ext(t.path)
 	name := filepath.Base(t.path)
-	nameWithoutExt := name[0 : len(name)-len(ext)]
-	cmd := exec.Command(t.buildfile, subcommand, name, nameWithoutExt)
+	cmd := exec.Command(t.buildfile, subcommand, name)
 	cmd.Stderr = os.Stderr
 	cmd.Dir = t.buildir
 	return cmd

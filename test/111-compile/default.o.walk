@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SOURCE=$3.c
+SOURCE=${2%.o}.c
 
 deps() {
     gcc -MM $SOURCE | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"

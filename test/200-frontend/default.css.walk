@@ -7,5 +7,5 @@ case $1 in
     find . -type f -iname '*.sass'
     ;;
   *)
-    sass $3.sass > $2
+    sass ${2%.css}.sass > $2
 esac
