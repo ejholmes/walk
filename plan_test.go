@@ -8,6 +8,7 @@ import (
 )
 
 type testTarget struct {
+	t    testing.TB
 	name string
 }
 
@@ -33,6 +34,8 @@ func (t *testTarget) Dependencies() ([]string, error) {
 }
 
 func (t *testTarget) Exec() error {
+	t.t.Logf("Exec: %s", t.Name())
+
 	switch t.name {
 	case "b/hello.c":
 		return nil
@@ -50,25 +53,19 @@ func (t *testTarget) Name() string {
 	return t.name
 }
 
-func newTestTarget(name string) (Target, error) {
-	return &testTarget{name}, nil
+func newTestTarget(t *testing.T) func(string) (Target, error) {
+	return func(name string) (Target, error) {
+		return &testTarget{t, name}, nil
+	}
 }
 
 func TestPlan(t *testing.T) {
 	plan := newPlan()
-	plan.NewTarget = newTestTarget
+	plan.NewTarget = newTestTarget(t)
 
 	_, err := plan.Plan("all")
 	assert.NoError(t, err)
 
 	err = plan.Exec()
 	assert.NoError(t, err)
-}
-
-func logVisit(t *testing.T, f func(Target) error) func(Target) error {
-	return func(target Target) error {
-		err := f(target)
-		t.Logf("Visited %s", target.Name())
-		return err
-	}
 }
