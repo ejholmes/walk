@@ -5,8 +5,10 @@ import (
 	"os"
 )
 
+const DefaultTarget = "all"
+
 func main() {
-	target := "all"
+	target := DefaultTarget
 	if len(os.Args) >= 2 {
 		target = os.Args[1]
 	}
