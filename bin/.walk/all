@@ -1,0 +1,10 @@
+#!/bin/bash
+
+case $1 in
+  deps)
+    echo walk
+    echo walk-linux
+    echo walk-darwin
+    ;;
+  *)
+esac
