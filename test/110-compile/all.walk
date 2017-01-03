@@ -2,7 +2,9 @@
 
 case $1 in
   deps)
-    echo hello ;;
+    echo hello 
+    echo test
+    ;;
   *)
     true ;;
 esac

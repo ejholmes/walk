@@ -47,6 +47,16 @@ type Plan struct {
 	graph *Graph
 }
 
+// Exec is a simple helper to build and execute a Plan.
+func Exec(target string) error {
+	plan := newPlan()
+	_, err := plan.Plan(target)
+	if err != nil {
+		return err
+	}
+	return plan.Exec()
+}
+
 func newPlan() *Plan {
 	return &Plan{
 		NewTarget: NewTarget,
