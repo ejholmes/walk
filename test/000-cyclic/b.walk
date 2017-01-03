@@ -1,0 +1,9 @@
+#!/bin/bash
+
+case $1 in
+  deps)
+    echo a
+    ;;
+  *)
+    true ;;
+esac

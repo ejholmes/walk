@@ -56,6 +56,10 @@ func (g *Graph) Walk(fn func(Target) error) error {
 	})
 }
 
+func (g *Graph) Validate() error {
+	return g.dag.Validate()
+}
+
 func (g *Graph) String() string {
 	return g.dag.String()
 }

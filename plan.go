@@ -66,6 +66,15 @@ func newPlan() *Plan {
 
 // Plan builds the graph, starting with the given target.
 func (p *Plan) Plan(target string) (Target, error) {
+	t, err := p.addTarget(target)
+	if err != nil {
+		return t, err
+	}
+
+	return t, p.graph.Validate()
+}
+
+func (p *Plan) addTarget(target string) (Target, error) {
 	// Target already exists in the graph.
 	if t := p.graph.Target(target); t != nil {
 		return t, nil
@@ -84,7 +93,7 @@ func (p *Plan) Plan(target string) (Target, error) {
 	}
 
 	for _, d := range deps {
-		dep, err := p.Plan(d)
+		dep, err := p.addTarget(d)
 		if err != nil {
 			return t, err
 		}
