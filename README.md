@@ -61,14 +61,14 @@ By separating these phases, **walk** can build a compact dependency graph, and p
 
 ### Arguments
 
-When **build** executes a `.build` file, it executes it with the following positional arguments:
+When **walk** executes a `.walk` file, it executes it with the following positional arguments:
 
-1. `$1`: The phase (**deps** or **build**).
+1. `$1`: The phase (**deps** or **exec**).
 2. `$2`: The name of the target to build (e.g. `hello.o`).
 
 ### Conditional Execution
 
-By design, walk does not try to perform any kind of conditional execution of targets (e.g. if the file modification time has changed, like make). Conditional execution is left to the `.walk` file in the **build** phase. For example, if I wanted to only build `hello` if `hello.c` has changed, I can do so like so:
+By design, walk does not try to perform any kind of conditional execution of targets (e.g. if the file modification time has changed, like make). Conditional execution is left to the `.walk` file in the **exec** phase. For example, if I wanted to only build `hello` if `hello.c` has changed, I can do so like so:
 
 ```bash
 #!/bin/bash
@@ -79,9 +79,9 @@ case $1 in
   deps)
     echo $dep ;;
   exec)
-    if [ "$dep" -nt "hello" ];
+    if [ "$dep" -nt "hello" ]; then
       gcc -Wall -o hello $deps
-    then
+    fi
 esac
 ```
 
