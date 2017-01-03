@@ -184,7 +184,7 @@ func (t *FileTarget) Exec() error {
 }
 
 func (t *FileTarget) Dependencies() ([]string, error) {
-	// No .build file, meaning it's a static dependency.
+	// No .walk file, meaning it's a static dependency.
 	if t.buildfile == "" {
 		return nil, nil
 	}
@@ -238,8 +238,8 @@ func (t *verboseFileTarget) Exec() error {
 	return err
 }
 
-// buildFile returns the path to the .build file that should be used to build
-// this target. If the target has no appropriate .build file, then "" is
+// buildFile returns the path to the .walk file that should be used to build
+// this target. If the target has no appropriate .walk file, then "" is
 // returned.
 func buildFile(path string) (string, error) {
 	dir := filepath.Dir(path)

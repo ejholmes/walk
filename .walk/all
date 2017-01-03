@@ -4,6 +4,7 @@ case $1 in
   deps)
     echo bin/all
     echo test
+    echo install
     ;;
   *)
 esac
