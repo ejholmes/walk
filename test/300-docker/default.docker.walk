@@ -5,7 +5,7 @@ NAME=${2%.docker}
 case $1 in
   deps)
     echo Dockerfile.$NAME
-    cat Dockerfile.$NAME | awk '/# depends: / { print $3 ".docker" }'
+    cat Dockerfile.$NAME | ruby -e 'if match = STDIN.read.match(/FROM walk\/(.*)/); puts match[1] + ".docker" end'
     ;;
   *)
     docker build -t walk/$NAME -f Dockerfile.$NAME .
