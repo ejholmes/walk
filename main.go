@@ -1,25 +1,40 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io"
 	"os"
 )
 
 const DefaultTarget = "all"
 
 func main() {
+	var (
+		verbose = flag.Bool("v", false, "Show stdout from rules")
+	)
+	flag.Parse()
+
 	target := DefaultTarget
-	if len(os.Args) >= 2 {
-		target = os.Args[1]
+	args := flag.Args()
+	if len(args) >= 2 {
+		target = args[1]
 	}
 
 	plan := newPlan()
 
 	must(plan.Plan(target))
 	must(plan.Exec(ExecOptions{
-		Stdout: nil,
+		Stdout: stdout(*verbose),
 		Stderr: os.Stderr,
 	}))
+}
+
+func stdout(verbose bool) io.Writer {
+	if verbose {
+		return os.Stdout
+	}
+	return nil
 }
 
 func must(err error) {
