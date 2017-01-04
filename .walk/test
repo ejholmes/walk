@@ -1,10 +1,15 @@
 #!/bin/bash
 
+deps() {
+  echo test/all
+  find . -type f -iname '*.go'
+}
+
+tests() {
+  go test ./...
+}
+
 case $1 in
-  deps)
-    echo test/all
-    find . -type f -iname '*.go'
-    ;;
-  *)
-    go test ./...
+  deps) deps ;;
+  exec) tests ;;
 esac

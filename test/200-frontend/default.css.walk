@@ -1,11 +1,18 @@
 #!/bin/bash
 
+css=$2
+
+deps() {
+  # Depend on all *.sass files, in case there are imports. In reality, it
+  # would be nice if sass would tell us what a files dependencies were here.
+  find . -type f -iname '*.sass'
+}
+
+convert() {
+  sass ${css%.css}.sass > $css
+}
+
 case $1 in
-  deps)
-    # Depend on all *.sass files, in case there are imports. In reality, it
-    # would be nice if sass would tell us what a files dependencies were here.
-    find . -type f -iname '*.sass'
-    ;;
-  *)
-    sass ${2%.css}.sass > $2
+  deps) deps ;;
+  exec) convert ;;
 esac

@@ -1,10 +1,14 @@
 #!/bin/bash
 
-deps="hello.o"
+deps() {
+  echo hello.o
+}
+
+compile() {
+  gcc -Wall -o hello $(deps)
+}
 
 case $1 in
-  deps)
-    echo $deps ;;
-  *)
-    gcc -Wall -o hello $deps
+  deps) deps ;;
+  exec) compile ;;
 esac

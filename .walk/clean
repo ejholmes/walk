@@ -1,8 +1,14 @@
 #!/bin/bash
 
+deps() {
+  echo test/clean
+}
+
+clean() {
+  rm -rf bin/build
+}
+
 case $1 in
-  deps)
-    echo test/clean ;;
-  *)
-    rm -rf bin/build ;;
+  deps) deps ;;
+  exec) clean ;;
 esac

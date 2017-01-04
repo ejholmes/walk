@@ -1,21 +1,31 @@
 #!/bin/bash
 
-SOURCE=${2%.o}.c
+object=$2
+source_file=${2%.o}.c
 
 deps() {
-    gcc -MM $SOURCE | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
+  gcc -MM $source_file | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
+}
+
+# Returns true if any of the dependencies are newer than the object file.
+changed() {
+  for d in $(deps); do
+    if [[ "$d" -nt "$object" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+compile() {
+  gcc -Wall -o $object -c $source_file
 }
 
 case $1 in
-  deps)
-    deps ;;
+  deps) deps ;;
   exec)
-    object=$2
-    # If any of the dependencies are newer than the object file, build it.
-    for d in $(deps); do
-      if [ "$d" -nt $object ]; then
-        gcc -Wall -o $object -c $SOURCE
-        exit
-      fi
-    done
+    if changed; then
+      compile
+    fi
+    ;;
 esac

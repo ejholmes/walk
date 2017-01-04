@@ -31,13 +31,17 @@ For example, if I wanted to describe how to build a binary called "hello" from "
 ```bash
 #!/bin/bash
 
-dep="hello.c"
+deps() {
+  echo hello.c
+}
+
+compile() {
+  gcc -Wall -o hello $(deps)
+}
 
 case $1 in
-  dep)
-    echo $dep ;;
-  exec)
-    gcc -Wall -o hello $dep
+  deps) deps ;;
+  exec) compile ;;
 esac
 ```
 
@@ -73,15 +77,33 @@ By design, walk does not try to perform any kind of conditional execution of tar
 ```bash
 #!/bin/bash
 
-dep="hello.c"
+name=hello
+
+deps() {
+  echo hello.c
+}
+
+# Returns true if any of the dependencies are newer than the object file.
+changed() {
+  for d in $(deps); do
+    if [[ "$d" -nt "$name" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+compile() {
+  gcc -Wall -o "$name" $(deps)
+}
 
 case $1 in
-  deps)
-    echo $dep ;;
+  deps) deps ;;
   exec)
-    if [ "$dep" -nt "hello" ]; then
-      gcc -Wall -o hello $deps
+    if changed; then
+      compile
     fi
+    ;;
 esac
 ```
 

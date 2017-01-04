@@ -1,10 +1,12 @@
 #!/bin/bash
 
+deps() {
+  echo bin
+  echo test
+  echo install
+}
+
 case $1 in
-  deps)
-    echo bin/all
-    echo test
-    echo install
-    ;;
-  *)
+  deps) deps ;;
+  exec)
 esac

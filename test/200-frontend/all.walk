@@ -1,9 +1,11 @@
 #!/bin/bash
 
-case $1 in
-  deps)
+deps() {
     echo application.css
     echo test
-    ;;
-  *)
+}
+
+case $1 in
+  deps) deps ;;
+  exec)
 esac

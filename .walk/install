@@ -2,6 +2,6 @@
 
 case $1 in
   deps) ;;
-  *)
+  exec)
     go install .
 esac

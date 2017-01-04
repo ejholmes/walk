@@ -1,9 +1,14 @@
 #!/bin/bash
 
+deps() {
+  echo application.css
+}
+
+tests() {
+  cmp application.css application.css.expected
+}
+
 case $1 in
-  deps)
-    echo application.css
-    ;;
-  *)
-    cmp application.css application.css.expected
+  deps) deps ;;
+  exec) tests ;;
 esac

@@ -1,12 +1,23 @@
 #!/bin/bash
 
-NAME=${2%.docker}
+image=${2%.docker}
+dockerfile=Dockerfile.$image
+
+dependent_image() {
+  cat $dockerfile | ruby -e 'if match = STDIN.read.match(/FROM walk\/(.*)/); puts match[1] + ".docker" end'
+}
+
+deps() {
+  echo $dockerfile
+  # If the image depends on another image being built here, add it to the list of dependencies.
+  dependent_image
+}
+
+build() {
+  docker build -t walk/$image -f Dockerfile.$image .
+}
 
 case $1 in
-  deps)
-    echo Dockerfile.$NAME
-    cat Dockerfile.$NAME | ruby -e 'if match = STDIN.read.match(/FROM walk\/(.*)/); puts match[1] + ".docker" end'
-    ;;
-  *)
-    docker build -t walk/$NAME -f Dockerfile.$NAME .
+  deps) deps ;;
+  exec) build ;;
 esac

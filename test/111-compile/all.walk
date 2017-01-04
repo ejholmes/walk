@@ -1,8 +1,10 @@
 #!/bin/bash
 
+deps() {
+  echo hello
+}
+
 case $1 in
-  deps)
-    echo hello ;;
-  *)
-    true ;;
+  deps) deps ;;
+  exec)
 esac

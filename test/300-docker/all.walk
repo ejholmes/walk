@@ -1,8 +1,9 @@
 #!/bin/bash
 
+deps() {
+  echo b.docker
+}
+
 case $1 in
-  deps)
-    echo b.docker
-    ;;
-  *)
+  deps) deps ;;
 esac

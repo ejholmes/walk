@@ -1,10 +1,12 @@
 #!/bin/bash
 
-case $1 in
-  deps)
+deps() {
     echo walk
     echo walk-linux
     echo walk-darwin
-    ;;
-  *)
+}
+
+case $1 in
+  deps) deps ;;
+  exec)
 esac
