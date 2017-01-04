@@ -43,7 +43,10 @@ func newTarget(stdout, stderr io.Writer) func(string) (Target, error) {
 		}
 		t.stdout = stdout
 		t.stderr = stderr
-		return &verboseFileTarget{t}, nil
+		vt := &verboseFileTarget{
+			FileTarget: t,
+		}
+		return vt, nil
 	}
 }
 
@@ -251,7 +254,7 @@ func (t *verboseFileTarget) Exec() error {
 		return &fileBuildError{t.FileTarget, err}
 	}
 	if err == nil && t.walkfile != "" {
-		fmt.Printf("%s\n", t.Name())
+		fmt.Printf("%s\n", ansi("32", "%s", t.Name()))
 	}
 	return err
 }

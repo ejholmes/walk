@@ -5,9 +5,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/ejholmes/walk/internal/tty"
 )
 
 const DefaultTarget = "all"
+
+var isTTY bool
+
+func init() {
+	isTTY = isTerminal(os.Stdout)
+}
 
 func main() {
 	var (
@@ -42,7 +50,17 @@ func stdout(verbose bool) io.Writer {
 
 func must(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "%s\n", ansi("31", "error: %v", err))
 		os.Exit(1)
 	}
+}
+func isTerminal(w io.Writer) bool {
+	if w == nil {
+		return false
+	}
+	f, ok := w.(*os.File)
+	if !ok {
+		return false
+	}
+	return tty.IsTerminal(f.Fd())
 }
