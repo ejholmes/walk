@@ -73,6 +73,10 @@ func newPlan() *Plan {
 	}
 }
 
+func (p *Plan) String() string {
+	return p.graph.String()
+}
+
 // Plan builds the graph, starting with the given target.
 func (p *Plan) Plan(target string) error {
 	_, err := p.addTarget(target)

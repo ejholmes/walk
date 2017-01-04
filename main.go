@@ -11,7 +11,8 @@ const DefaultTarget = "all"
 
 func main() {
 	var (
-		verbose = flag.Bool("v", false, "Show stdout from rules")
+		verbose  = flag.Bool("v", false, "Show stdout from rules.")
+		onlyplan = flag.Bool("p", false, "Only plan the execution and print the graph. Does not enter the exec phase.")
 	)
 	flag.Parse()
 
@@ -25,7 +26,11 @@ func main() {
 	plan.NewTarget = newTarget(stdout(*verbose), os.Stderr)
 
 	must(plan.Plan(target))
-	must(plan.Exec())
+	if *onlyplan {
+		fmt.Print(plan)
+	} else {
+		must(plan.Exec())
+	}
 }
 
 func stdout(verbose bool) io.Writer {
