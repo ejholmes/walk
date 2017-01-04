@@ -11,8 +11,8 @@ const DefaultTarget = "all"
 
 func main() {
 	var (
-		verbose  = flag.Bool("v", false, "Show stdout from rules.")
-		onlyplan = flag.Bool("p", false, "Only plan the execution and print the graph. Does not enter the exec phase.")
+		verbose  = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
+		onlyplan = flag.Bool("p", false, fmt.Sprintf("Only plan the execution and print the graph. Does not execute the %s phase.", PhaseExec))
 	)
 	flag.Parse()
 

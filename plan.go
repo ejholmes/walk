@@ -13,8 +13,8 @@ import (
 // The two arguments that .walk executables will be called with, in the "plan"
 // or "exec" phases.
 const (
-	ArgDeps = "deps"
-	ArgExec = "exec"
+	PhaseDeps = "deps"
+	PhaseExec = "exec"
 )
 
 // Target represents an individual node in the dependency graph.
@@ -194,7 +194,7 @@ func (t *FileTarget) Exec() error {
 		return err
 	}
 
-	cmd := t.ruleCommand(ArgExec)
+	cmd := t.ruleCommand(PhaseExec)
 	return cmd.Run()
 }
 
@@ -205,7 +205,7 @@ func (t *FileTarget) Dependencies() ([]string, error) {
 	}
 
 	b := new(bytes.Buffer)
-	cmd := t.ruleCommand(ArgDeps)
+	cmd := t.ruleCommand(PhaseDeps)
 	cmd.Stdout = b
 
 	if err := cmd.Run(); err != nil {
