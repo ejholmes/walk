@@ -1,6 +1,6 @@
 #!/bin/bash
 
-css=$2
+target=$2
 
 deps() {
   # Depend on all *.sass files, in case there are imports. In reality, it
@@ -9,7 +9,7 @@ deps() {
 }
 
 convert() {
-  sass ${css%.css}.sass > $css
+  sass ${target%.css}.sass > $target
 }
 
 case $1 in

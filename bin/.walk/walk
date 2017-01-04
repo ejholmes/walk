@@ -1,17 +1,16 @@
 #!/bin/bash
 
-name=$2
+target=$2
 
 deps() {
   find . -type f -iname '*.go'
 }
 
 build() {
-  local name=$1
-  go build -o $1 ..
+  go build -o $target ..
 }
 
 case $1 in
   deps) deps ;;
-  exec) build $2 ;;
+  exec) build ;;
 esac

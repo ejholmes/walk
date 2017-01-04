@@ -1,6 +1,6 @@
 #!/bin/bash
 
-object=$2
+target=$2
 source_file=${2%.o}.c
 
 deps() {
@@ -10,7 +10,7 @@ deps() {
 # Returns true if any of the dependencies are newer than the object file.
 changed() {
   for d in $(deps); do
-    if [[ "$d" -nt "$object" ]]; then
+    if [[ "$d" -nt "$target" ]]; then
       return 0
     fi
   done
@@ -18,7 +18,7 @@ changed() {
 }
 
 compile() {
-  gcc -Wall -o $object -c $source_file
+  gcc -Wall -o $target -c $source_file
 }
 
 case $1 in
