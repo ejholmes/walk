@@ -17,17 +17,15 @@ func main() {
 
 	target := DefaultTarget
 	args := flag.Args()
-	if len(args) >= 2 {
-		target = args[1]
+	if len(args) >= 1 {
+		target = args[0]
 	}
 
 	plan := newPlan()
+	plan.NewTarget = newTarget(stdout(*verbose), os.Stderr)
 
 	must(plan.Plan(target))
-	must(plan.Exec(ExecOptions{
-		Stdout: stdout(*verbose),
-		Stderr: os.Stderr,
-	}))
+	must(plan.Exec())
 }
 
 func stdout(verbose bool) io.Writer {

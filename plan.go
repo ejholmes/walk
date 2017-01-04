@@ -17,19 +17,13 @@ const (
 	ArgExec = "exec"
 )
 
-// ExecOptions is passed to a Target's Exec method.
-type ExecOptions struct {
-	// Where stdout/stderr will be written.
-	Stdout, Stderr io.Writer
-}
-
 // Target represents an individual node in the dependency graph.
 type Target interface {
 	// Name returns the name of the target.
 	Name() string
 
 	// Exec executes the target.
-	Exec(ExecOptions) error
+	Exec() error
 
 	// Dependencies returns the name of the targets that this target depends
 	// on.
@@ -38,11 +32,19 @@ type Target interface {
 
 // NewTarget returns a new Target instance backed by a FileTarget.
 func NewTarget(name string) (Target, error) {
-	t, err := newFileTarget(name)
-	if err != nil {
-		return nil, err
+	return newTarget(nil, os.Stderr)(name)
+}
+
+func newTarget(stdout, stderr io.Writer) func(string) (Target, error) {
+	return func(name string) (Target, error) {
+		t, err := newFileTarget(name)
+		if err != nil {
+			return nil, err
+		}
+		t.stdout = stdout
+		t.stderr = stderr
+		return &verboseFileTarget{t}, nil
 	}
-	return &verboseFileTarget{t}, nil
 }
 
 // Plan is used to build a graph of all the targets and their dependencies.
@@ -55,13 +57,13 @@ type Plan struct {
 }
 
 // Exec is a simple helper to build and execute a Plan.
-func Exec(options ExecOptions, target string) error {
+func Exec(target string) error {
 	plan := newPlan()
 	err := plan.Plan(target)
 	if err != nil {
 		return err
 	}
-	return plan.Exec(options)
+	return plan.Exec()
 }
 
 func newPlan() *Plan {
@@ -111,9 +113,9 @@ func (p *Plan) addTarget(target string) (Target, error) {
 }
 
 // Exec executes the plan.
-func (p *Plan) Exec(options ExecOptions) error {
+func (p *Plan) Exec() error {
 	err := p.graph.Walk(func(t Target) error {
-		return t.Exec(options)
+		return t.Exec()
 	})
 	return err
 }
@@ -125,8 +127,8 @@ type fileBuildError struct {
 
 func (e *fileBuildError) Error() string {
 	prefix := fmt.Sprintf("error performing %s", e.target.Name())
-	if e.target.buildfile != "" {
-		prefix += fmt.Sprintf(" (using %s)", e.target.buildfile)
+	if e.target.walkfile != "" {
+		prefix += fmt.Sprintf(" (using %s)", e.target.walkfile)
 	}
 	return fmt.Sprintf("%s: %v", prefix, e.err)
 }
@@ -139,12 +141,14 @@ type FileTarget struct {
 	// The absolute path to the file.
 	path string
 
-	// path to the buildfile to use.
-	buildfile string
+	// path to the walkfile to use.
+	walkfile string
 
 	// the directory to use as the working directory when executing the
 	// build file.
-	buildir string
+	dir string
+
+	stdout, stderr io.Writer
 }
 
 // newFileTarget initializes and returns a new FileTarget instance.
@@ -154,21 +158,21 @@ func newFileTarget(name string) (*FileTarget, error) {
 		return nil, err
 	}
 
-	buildfile, err := buildFile(path)
+	walkfile, err := walkFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	var buildir string
-	if buildfile != "" {
-		buildir = filepath.Dir(path)
+	var dir string
+	if walkfile != "" {
+		dir = filepath.Dir(path)
 	}
 
 	return &FileTarget{
-		name:      name,
-		path:      path,
-		buildfile: buildfile,
-		buildir:   buildir,
+		name:     name,
+		path:     path,
+		walkfile: walkfile,
+		dir:      dir,
 	}, nil
 }
 
@@ -177,8 +181,8 @@ func (t *FileTarget) Name() string {
 }
 
 // Exec executes the FileTarget.
-func (t *FileTarget) Exec(options ExecOptions) error {
-	if t.buildfile == "" {
+func (t *FileTarget) Exec() error {
+	if t.walkfile == "" {
 		// It's possible for a target to simply be a static file, in which case
 		// we don't need to perform a build. We do however want to ensure that
 		// it exists in this case.
@@ -186,21 +190,21 @@ func (t *FileTarget) Exec(options ExecOptions) error {
 		return err
 	}
 
-	cmd := t.buildCommand(ArgExec)
-	cmd.Stdout = options.Stdout
-	cmd.Stderr = options.Stderr
+	cmd := t.ruleCommand(ArgExec)
 	return cmd.Run()
 }
 
 func (t *FileTarget) Dependencies() ([]string, error) {
 	// No .walk file, meaning it's a static dependency.
-	if t.buildfile == "" {
+	if t.walkfile == "" {
 		return nil, nil
 	}
 
-	cmd := t.buildCommand(ArgDeps)
-	out, err := cmd.Output()
-	if err != nil {
+	b := new(bytes.Buffer)
+	cmd := t.ruleCommand(ArgDeps)
+	cmd.Stdout = b
+
+	if err := cmd.Run(); err != nil {
 		return nil, err
 	}
 
@@ -210,11 +214,11 @@ func (t *FileTarget) Dependencies() ([]string, error) {
 	}
 
 	var deps []string
-	scanner := bufio.NewScanner(bytes.NewReader(out))
+	scanner := bufio.NewScanner(b)
 	for scanner.Scan() {
 		path := scanner.Text()
 		// Make all paths relative to the working directory.
-		path, err := filepath.Rel(wd, filepath.Join(t.buildir, scanner.Text()))
+		path, err := filepath.Rel(wd, filepath.Join(t.dir, scanner.Text()))
 		if err != nil {
 			return deps, err
 		}
@@ -224,11 +228,12 @@ func (t *FileTarget) Dependencies() ([]string, error) {
 	return deps, scanner.Err()
 }
 
-func (t *FileTarget) buildCommand(subcommand string) *exec.Cmd {
+func (t *FileTarget) ruleCommand(subcommand string) *exec.Cmd {
 	name := filepath.Base(t.path)
-	cmd := exec.Command(t.buildfile, subcommand, name)
-	cmd.Stderr = os.Stderr
-	cmd.Dir = t.buildir
+	cmd := exec.Command(t.walkfile, subcommand, name)
+	cmd.Stdout = t.stdout
+	cmd.Stderr = t.stderr
+	cmd.Dir = t.dir
 	return cmd
 }
 
@@ -236,21 +241,21 @@ type verboseFileTarget struct {
 	*FileTarget
 }
 
-func (t *verboseFileTarget) Exec(options ExecOptions) error {
-	err := t.FileTarget.Exec(options)
+func (t *verboseFileTarget) Exec() error {
+	err := t.FileTarget.Exec()
 	if err != nil {
 		return &fileBuildError{t.FileTarget, err}
 	}
-	if err == nil && t.buildfile != "" {
+	if err == nil && t.walkfile != "" {
 		fmt.Printf("%s\n", t.Name())
 	}
 	return err
 }
 
-// buildFile returns the path to the .walk file that should be used to build
+// walkFile returns the path to the .walk file that should be used to execute
 // this target. If the target has no appropriate .walk file, then "" is
 // returned.
-func buildFile(path string) (string, error) {
+func walkFile(path string) (string, error) {
 	dir := filepath.Dir(path)
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)

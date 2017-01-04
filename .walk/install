@@ -1,7 +1,9 @@
 #!/bin/bash
 
+install() {
+  go install .
+}
+
 case $1 in
-  deps) ;;
-  exec)
-    go install .
+  exec) install ;;
 esac

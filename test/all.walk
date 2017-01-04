@@ -1,7 +1,6 @@
 #!/bin/bash
 
 deps() {
-    echo clean
     echo 110-compile/all
     echo 111-compile/all
     echo 200-frontend/all

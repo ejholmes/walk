@@ -7,5 +7,4 @@ deps() {
 
 case $1 in
   deps) deps ;;
-  exec)
 esac

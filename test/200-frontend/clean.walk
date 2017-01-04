@@ -5,6 +5,5 @@ clean() {
 }
 
 case $1 in
-  deps) ;;
   exec) clean ;;
 esac
