@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,13 +17,19 @@ const (
 	ArgExec = "exec"
 )
 
+// ExecOptions is passed to a Target's Exec method.
+type ExecOptions struct {
+	// Where stdout/stderr will be written.
+	Stdout, Stderr io.Writer
+}
+
 // Target represents an individual node in the dependency graph.
 type Target interface {
 	// Name returns the name of the target.
 	Name() string
 
 	// Exec executes the target.
-	Exec() error
+	Exec(ExecOptions) error
 
 	// Dependencies returns the name of the targets that this target depends
 	// on.
@@ -48,13 +55,13 @@ type Plan struct {
 }
 
 // Exec is a simple helper to build and execute a Plan.
-func Exec(target string) error {
+func Exec(options ExecOptions, target string) error {
 	plan := newPlan()
-	_, err := plan.Plan(target)
+	err := plan.Plan(target)
 	if err != nil {
 		return err
 	}
-	return plan.Exec()
+	return plan.Exec(options)
 }
 
 func newPlan() *Plan {
@@ -65,13 +72,13 @@ func newPlan() *Plan {
 }
 
 // Plan builds the graph, starting with the given target.
-func (p *Plan) Plan(target string) (Target, error) {
-	t, err := p.addTarget(target)
+func (p *Plan) Plan(target string) error {
+	_, err := p.addTarget(target)
 	if err != nil {
-		return t, err
+		return err
 	}
 
-	return t, p.graph.Validate()
+	return p.graph.Validate()
 }
 
 func (p *Plan) addTarget(target string) (Target, error) {
@@ -104,9 +111,9 @@ func (p *Plan) addTarget(target string) (Target, error) {
 }
 
 // Exec executes the plan.
-func (p *Plan) Exec() error {
+func (p *Plan) Exec(options ExecOptions) error {
 	err := p.graph.Walk(func(t Target) error {
-		return t.Exec()
+		return t.Exec(options)
 	})
 	return err
 }
@@ -170,7 +177,7 @@ func (t *FileTarget) Name() string {
 }
 
 // Exec executes the FileTarget.
-func (t *FileTarget) Exec() error {
+func (t *FileTarget) Exec(options ExecOptions) error {
 	if t.buildfile == "" {
 		// It's possible for a target to simply be a static file, in which case
 		// we don't need to perform a build. We do however want to ensure that
@@ -180,6 +187,8 @@ func (t *FileTarget) Exec() error {
 	}
 
 	cmd := t.buildCommand(ArgExec)
+	cmd.Stdout = options.Stdout
+	cmd.Stderr = options.Stderr
 	return cmd.Run()
 }
 
@@ -227,8 +236,8 @@ type verboseFileTarget struct {
 	*FileTarget
 }
 
-func (t *verboseFileTarget) Exec() error {
-	err := t.FileTarget.Exec()
+func (t *verboseFileTarget) Exec(options ExecOptions) error {
+	err := t.FileTarget.Exec(options)
 	if err != nil {
 		return &fileBuildError{t.FileTarget, err}
 	}

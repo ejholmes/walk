@@ -15,10 +15,11 @@ func main() {
 
 	plan := newPlan()
 
-	_, err := plan.Plan(target)
-	must(err)
-
-	must(plan.Exec())
+	must(plan.Plan(target))
+	must(plan.Exec(ExecOptions{
+		Stdout: nil,
+		Stderr: os.Stderr,
+	}))
 }
 
 func must(err error) {
