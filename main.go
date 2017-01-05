@@ -22,8 +22,8 @@ func init() {
 
 func main() {
 	var (
-		verbose  = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
-		onlyplan = flag.Bool("p", false, fmt.Sprintf("Only plan the execution and print the graph. Does not execute the %s phase.", PhaseExec))
+		verbose = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
+		deps    = flag.Bool("d", false, "Print the dependencies of the target(s).")
 	)
 	flag.Parse()
 
@@ -47,8 +47,10 @@ func main() {
 	}()
 
 	must(plan.Plan(ctx, targets...))
-	if *onlyplan {
-		fmt.Print(plan)
+	if *deps {
+		for _, t := range plan.Dependencies(targets...) {
+			fmt.Println(t.Name())
+		}
 	} else {
 		must(plan.Exec(ctx))
 	}

@@ -87,6 +87,11 @@ func (p *Plan) String() string {
 	return p.graph.String()
 }
 
+// Returns an array of all of the targets. Should be called after Plan.
+func (p *Plan) Dependencies(targets ...string) []Target {
+	return p.graph.Dependencies(targets...)
+}
+
 // Plan builds the graph, starting with the given target. It recursively
 // executes the "deps" phase of the targets rule, adding each dependency to the
 // graph as their found.

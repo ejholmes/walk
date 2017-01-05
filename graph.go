@@ -63,6 +63,23 @@ func (g *Graph) Walk(fn func(Target) error) error {
 	})
 }
 
+func (g *Graph) Dependencies(targets ...string) []Target {
+	d := make(map[string]bool)
+	for _, name := range targets {
+		g.dag.DepthFirstWalk([]dag.Vertex{name}, func(v dag.Vertex, i int) error {
+			if i > 0 {
+				d[v.(string)] = true
+			}
+			return nil
+		})
+	}
+	var t []Target
+	for name := range d {
+		t = append(t, g.target(name))
+	}
+	return t
+}
+
 func (g *Graph) Validate() error {
 	return g.dag.Validate()
 }

@@ -1,0 +1,6 @@
+# manuals
+walk(1)     walk.1.ronn
+
+# external manuals
+make(1)     http://man.cx/make(1)
+bash(1)     http://man.cx/bash(1)

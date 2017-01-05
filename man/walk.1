@@ -13,7 +13,10 @@
 \fBwalk\fR [target1] [target2] \.\.\.
 .
 .SH "DESCRIPTION"
-TODO
+Walk is a small utility that can be used to execute tasks, or build programs from source\. It\'s similar to make in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
+.
+.P
+At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, etc\. walk(1) provides a general UNIX utility to express a DAG as a set of targets (files) that depend on each other\.
 .
 .SH "OPTIONS"
 .
@@ -22,20 +25,69 @@ TODO
 Show stdout from rules when executing the \fBexec\fR phase\.
 .
 .TP
-\fB\-p\fR
-Only plan the execution and print the graph\. Does not execute the \fBexec\fR phase\.
-.
-.P
-TODO
+\fB\-d\fR
+Print the dependencies of the target(s)\.
 .
 .SH "TARGETS"
-TODO
+Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\.
+.
+.SH "RULES"
+Rules determine \fIhow\fR a target is built, and are defined as executable files\.
+.
+.P
+When walk(1) begins execution of a target, it first attempts to find a compatible rule for the target by looking at executable files ending in \fB\.walk\fR or any files inside a \fB\.walk\fR directory\. As an example, say we wanted to build \fBhello\.o\fR by executing \fBwalk hello\.o\fR\. walk(1) will attempt, in order, the following files:
+.
+.P
+\&\.walk/hello\.o
+.
+.br
+hello\.o\.walk
+.
+.br
+\&\.walk/default\.o
+.
+.br
+default\.o\.walk
+.
+.br
+.
+.P
+walk(1) will only look for this files in the same directory that the target is in\. If no suitable rule is found, and the file already exists, then walk(1) assumes that it\'s a static file and does nothing\.
 .
 .SH "PHASES"
-TODO
+walk(1) has two phases:
+.
+.TP
+\fBPlan\fR
+In this phase, walk(1) executes all the rules with \fBdeps\fR as the first argument\. Rules are expected to print a newline delimited list of files that the target depends on, relative to the target\. Internally, walk(1) builds a graph of all of the targets and their dependencies\.
+.
+.TP
+\fBExec\fR
+In this phase, walk(1) executes all of the rules files with \fBexec\fR as the first argument\. Rules are expected to build the given target, but don\'t need to if it\'s, for example, a task (like \fBtest\fR, \fBclean\fR, etc)\.
+.
+.P
+By separating these phases, walk(1) can build a compact dependency graph, and perform fast parallel builds\.
+.
+.SH "COMPARISONS"
+walk(1) is heavily inspired by make(1) and redo \fIhttps://github\.com/apenwarr/redo\fR\. There are a number of reasons why walk(1) may be better in certain scenarios:
+.
+.TP
+\fBSimplicity\fR
+walk(1) does not have anything synonymous with make(1)\'s Makefile \fIhttps://www\.gnu\.org/software/make/manual/make\.html\fR\. Everything is simply defined as executable files, which provides the ultimate level of flexibility on UNIX to compose existing tools\.
+.
+.TP
+\fBConditional Execution\fR
+For mostly legacy reasons, make(1) determines whether a target needs to be built based on the file modification time of its dependencies\. While this works well for building C/C++ programs on a local machine, it breaks down in scenarios where you have a large complex build system that runs in a shared environment\. Also, depending on the target, other caching mechanisms like content hashing may be more suitable\. There are attempts \fIhttp://blog\.jgc\.org/2006/04/rebuilding\-when\-hash\-has\-changed\-not\.html\fR to get around this handicap, but none that work well\. walk(1) leaves conditional execution up to the Rule\.
+.
+.TP
+\fBRecursiveness\fR
+Recursive make is generally a mistake\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\.
+.
+.SH "EXAMPLES"
+See \fIhttps://github\.com/ejholmes/walk/tree/master/test\fR for examples\.
 .
 .SH "BUGS"
-You can find a list of bugs at https://github\.com/ejholmes/walk/issues\. Please report any issues there\.
+You can find a list of bugs at \fIhttps://github\.com/ejholmes/walk/issues\fR\. Please report any issues there\.
 .
 .SH "COPYRIGHT"
 Walk is Copyright (C) 2017 Eric Holmes

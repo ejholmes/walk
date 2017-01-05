@@ -58,7 +58,10 @@
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#OPTIONS">OPTIONS</a>
     <a href="#TARGETS">TARGETS</a>
+    <a href="#RULES">RULES</a>
     <a href="#PHASES">PHASES</a>
+    <a href="#COMPARISONS">COMPARISONS</a>
+    <a href="#EXAMPLES">EXAMPLES</a>
     <a href="#BUGS">BUGS</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
     <a href="#SEE-ALSO">SEE ALSO</a>
@@ -82,29 +85,102 @@
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
-<p>TODO</p>
+<p>Walk is a small utility that can be used to execute tasks, or build programs
+from source. It's similar to make in many ways, but with some fundamental
+differences that make it vastly simpler, and arguably more powerful.</p>
+
+<p>At the core of <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> is a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed Acyclic
+Graph</a> (DAG). DAG's are a
+magical data structure that allow you to easily express dependency trees.
+You'll find DAG's everywhere; in
+<a href="http://eagain.net/articles/git-for-computer-scientists/">git</a>, languages,
+<a href="https://github.com/hashicorp/terraform/tree/master/dag">infrastructure tools</a>,
+etc. <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> provides a general UNIX utility to express a DAG as a set of targets
+(files) that depend on each other.</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
 <dl>
 <dt class="flush"><code>-v</code></dt><dd><p>Show stdout from rules when executing the <strong>exec</strong> phase.</p></dd>
-<dt class="flush"><code>-p</code></dt><dd><p>Only plan the execution and print the graph. Does not execute the <strong>exec</strong> phase.</p></dd>
+<dt class="flush"><code>-d</code></dt><dd><p>Print the dependencies of the target(s).</p></dd>
 </dl>
 
 
-<p>TODO</p>
-
 <h2 id="TARGETS">TARGETS</h2>
 
-<p>TODO</p>
+<p>Targets can be used to represent a task, or a file that needs to be built. They
+are synonymous with targets in <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>.</p>
+
+<h2 id="RULES">RULES</h2>
+
+<p>Rules determine <em>how</em> a target is built, and are defined as executable files.</p>
+
+<p>When <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> begins execution of a target, it first attempts to find a
+compatible rule for the target by looking at executable files ending in <code>.walk</code>
+or any files inside a <code>.walk</code> directory. As an example, say we wanted to build
+<code>hello.o</code> by executing <code>walk hello.o</code>. <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> will attempt, in order, the
+following files:</p>
+
+<p>  .walk/hello.o<br />
+  hello.o.walk<br />
+  .walk/default.o<br />
+  default.o.walk<br /></p>
+
+<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> will only look for this files in the same directory that the target is
+in. If no suitable rule is found, and the file already exists, then <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a>
+assumes that it's a static file and does nothing.</p>
 
 <h2 id="PHASES">PHASES</h2>
 
-<p>TODO</p>
+<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> has two phases:</p>
+
+<dl>
+<dt class="flush"><code>Plan</code></dt><dd><p>In this phase, <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> executes all the rules with <code>deps</code> as the first
+argument. Rules are expected to print a newline delimited list of files
+that the target depends on, relative to the target. Internally, <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a>
+builds a graph of all of the targets and their dependencies.</p></dd>
+<dt class="flush"><code>Exec</code></dt><dd><p>In this phase, <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> executes all of the rules files with <code>exec</code> as the
+first argument. Rules are expected to build the given target, but don't
+need to if it's, for example, a task (like <code>test</code>, <code>clean</code>, etc).</p></dd>
+</dl>
+
+
+<p>By separating these phases, <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> can build a compact dependency graph, and
+perform fast parallel builds.</p>
+
+<h2 id="COMPARISONS">COMPARISONS</h2>
+
+<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> is heavily inspired by <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a> and
+<a href="https://github.com/apenwarr/redo">redo</a>. There are a number of reasons why
+<a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> may be better in certain scenarios:</p>
+
+<dl>
+<dt><code>Simplicity</code></dt><dd><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> does not have anything synonymous with <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>'s
+<a href="https://www.gnu.org/software/make/manual/make.html">Makefile</a>. Everything
+is simply defined as executable files, which provides the ultimate level of
+flexibility on UNIX to compose existing tools.</dd>
+<dt><code>Conditional Execution</code></dt><dd>For mostly legacy reasons, <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a> determines whether a target needs to be
+built based on the file modification time of its dependencies. While this
+works well for building C/C++ programs on a local machine, it breaks down
+in scenarios where you have a large complex build system that runs in a
+shared environment. Also, depending on the target, other caching
+mechanisms like content hashing may be more suitable. There are
+<a href="http://blog.jgc.org/2006/04/rebuilding-when-hash-has-changed-not.html">attempts</a>
+to get around this handicap, but none that work well. <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> leaves
+conditional execution up to the Rule.</dd>
+<dt> <code>Recursiveness</code></dt><dd>Recursive make is generally a mistake. Because of <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a>'s design, you can
+execute <code>walk</code> from any directory, and always get the same result.</dd>
+</dl>
+
+
+<h2 id="EXAMPLES">EXAMPLES</h2>
+
+<p>See <a href="https://github.com/ejholmes/walk/tree/master/test" data-bare-link="true">https://github.com/ejholmes/walk/tree/master/test</a> for examples.</p>
 
 <h2 id="BUGS">BUGS</h2>
 
-<p>You can find a list of bugs at https://github.com/ejholmes/walk/issues. Please report any issues there.</p>
+<p>You can find a list of bugs at <a href="https://github.com/ejholmes/walk/issues" data-bare-link="true">https://github.com/ejholmes/walk/issues</a>.
+Please report any issues there.</p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
@@ -112,7 +188,7 @@
 
 <h2 id="SEE-ALSO">SEE ALSO</h2>
 
-<p><span class="man-ref">make<span class="s">(1)</span></span>, <span class="man-ref">bash<span class="s">(1)</span></span></p>
+<p><a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>, <a class="man-ref" href="http://man.cx/bash(1)">bash<span class="s">(1)</span></a></p>
 
 
   <ol class='man-decor man-foot man foot'>
