@@ -18,17 +18,22 @@ const (
 	PhaseExec = "exec"
 )
 
-// Target represents an individual node in the dependency graph.
-type Target interface {
-	// Name returns the name of the target.
-	Name() string
-
-	// Exec executes the target.
-	Exec(context.Context) error
-
+// Rule defines what a target depends on, and how to build it.
+type Rule interface {
 	// Dependencies returns the name of the targets that this target depends
 	// on.
 	Dependencies(context.Context) ([]string, error)
+
+	// Exec executes the target.
+	Exec(context.Context) error
+}
+
+// Target represents an individual node in the dependency graph.
+type Target interface {
+	Rule
+
+	// Name returns the name of the target.
+	Name() string
 }
 
 // NewTarget returns a new Target instance backed by a FileTarget.
