@@ -19,6 +19,13 @@ func TestPlan(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestPlan_Multi(t *testing.T) {
+	clean(t)
+
+	err := Exec(ctx, "test/110-compile/all", "test/111-compile/all")
+	assert.NoError(t, err)
+}
+
 func TestPlan_CyclicDependencies(t *testing.T) {
 	clean(t)
 
