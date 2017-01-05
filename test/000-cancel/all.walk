@@ -1,0 +1,5 @@
+#!/bin/bash
+
+case $1 in
+  exec) exec sleep 60 ;;
+esac

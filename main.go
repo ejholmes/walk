@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -33,11 +34,13 @@ func main() {
 	plan := newPlan()
 	plan.NewTarget = newTarget(stdout(*verbose), os.Stderr)
 
-	must(plan.Plan(target))
+	ctx := context.Background()
+
+	must(plan.Plan(ctx, target))
 	if *onlyplan {
 		fmt.Print(plan)
 	} else {
-		must(plan.Exec())
+		must(plan.Exec(ctx))
 	}
 }
 

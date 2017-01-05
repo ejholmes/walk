@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -23,11 +24,11 @@ type Target interface {
 	Name() string
 
 	// Exec executes the target.
-	Exec() error
+	Exec(context.Context) error
 
 	// Dependencies returns the name of the targets that this target depends
 	// on.
-	Dependencies() ([]string, error)
+	Dependencies(context.Context) ([]string, error)
 }
 
 // NewTarget returns a new Target instance backed by a FileTarget.
@@ -60,13 +61,13 @@ type Plan struct {
 }
 
 // Exec is a simple helper to build and execute a Plan.
-func Exec(target string) error {
+func Exec(ctx context.Context, target string) error {
 	plan := newPlan()
-	err := plan.Plan(target)
+	err := plan.Plan(ctx, target)
 	if err != nil {
 		return err
 	}
-	return plan.Exec()
+	return plan.Exec(ctx)
 }
 
 func newPlan() *Plan {
@@ -81,8 +82,8 @@ func (p *Plan) String() string {
 }
 
 // Plan builds the graph, starting with the given target.
-func (p *Plan) Plan(target string) error {
-	_, err := p.addTarget(target)
+func (p *Plan) Plan(ctx context.Context, target string) error {
+	_, err := p.addTarget(ctx, target)
 	if err != nil {
 		return err
 	}
@@ -90,7 +91,7 @@ func (p *Plan) Plan(target string) error {
 	return p.graph.Validate()
 }
 
-func (p *Plan) addTarget(target string) (Target, error) {
+func (p *Plan) addTarget(ctx context.Context, target string) (Target, error) {
 	// Target already exists in the graph.
 	if t := p.graph.Target(target); t != nil {
 		return t, nil
@@ -103,13 +104,13 @@ func (p *Plan) addTarget(target string) (Target, error) {
 
 	p.graph.Add(t)
 
-	deps, err := t.Dependencies()
+	deps, err := t.Dependencies(ctx)
 	if err != nil {
 		return t, fmt.Errorf("error getting dependencies for %s: %v", target, err)
 	}
 
 	for _, d := range deps {
-		dep, err := p.addTarget(d)
+		dep, err := p.addTarget(ctx, d)
 		if err != nil {
 			return t, err
 		}
@@ -120,9 +121,9 @@ func (p *Plan) addTarget(target string) (Target, error) {
 }
 
 // Exec executes the plan.
-func (p *Plan) Exec() error {
+func (p *Plan) Exec(ctx context.Context) error {
 	err := p.graph.Walk(func(t Target) error {
-		return t.Exec()
+		return t.Exec(ctx)
 	})
 	return err
 }
@@ -188,7 +189,7 @@ func (t *FileTarget) Name() string {
 }
 
 // Exec executes the FileTarget.
-func (t *FileTarget) Exec() error {
+func (t *FileTarget) Exec(ctx context.Context) error {
 	if t.walkfile == "" {
 		// It's possible for a target to simply be a static file, in which case
 		// we don't need to perform a build. We do however want to ensure that
@@ -197,18 +198,18 @@ func (t *FileTarget) Exec() error {
 		return err
 	}
 
-	cmd := t.ruleCommand(PhaseExec)
+	cmd := t.ruleCommand(ctx, PhaseExec)
 	return cmd.Run()
 }
 
-func (t *FileTarget) Dependencies() ([]string, error) {
+func (t *FileTarget) Dependencies(ctx context.Context) ([]string, error) {
 	// No .walk file, meaning it's a static dependency.
 	if t.walkfile == "" {
 		return nil, nil
 	}
 
 	b := new(bytes.Buffer)
-	cmd := t.ruleCommand(PhaseDeps)
+	cmd := t.ruleCommand(ctx, PhaseDeps)
 	cmd.Stdout = b
 
 	if err := cmd.Run(); err != nil {
@@ -235,9 +236,9 @@ func (t *FileTarget) Dependencies() ([]string, error) {
 	return deps, scanner.Err()
 }
 
-func (t *FileTarget) ruleCommand(subcommand string) *exec.Cmd {
+func (t *FileTarget) ruleCommand(ctx context.Context, subcommand string) *exec.Cmd {
 	name := filepath.Base(t.path)
-	cmd := exec.Command(t.walkfile, subcommand, name)
+	cmd := exec.CommandContext(ctx, t.walkfile, subcommand, name)
 	cmd.Stdout = t.stdout
 	cmd.Stderr = t.stderr
 	cmd.Dir = t.dir
@@ -248,8 +249,8 @@ type verboseFileTarget struct {
 	*FileTarget
 }
 
-func (t *verboseFileTarget) Exec() error {
-	err := t.FileTarget.Exec()
+func (t *verboseFileTarget) Exec(ctx context.Context) error {
+	err := t.FileTarget.Exec(ctx)
 	if err != nil {
 		return &fileBuildError{t.FileTarget, err}
 	}
