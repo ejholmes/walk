@@ -4,6 +4,8 @@ walk(1) is a fast, lightweight, general purpose build and task execution system.
 
 Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 
+![](./docs/walk.gif)
+
 ## Features
 
 * Fast parallel execution.
