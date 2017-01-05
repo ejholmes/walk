@@ -7,17 +7,6 @@ deps() {
   gcc -MM $src | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
 }
 
-# Returns true if any of the dependencies are newer than the object file.
-changed() {
-  if [[ ! -f "$target" ]]; then
-    return 0
-  elif [[ -n "$(find $(deps) -newer $target)" ]]; then
-    return 0
-  else
-    return 1
-  fi
-}
-
 compile() {
   gcc -Wall -o $target -c $src
 }
@@ -25,7 +14,7 @@ compile() {
 case $1 in
   deps) deps ;;
   exec)
-    if changed; then
+    if ./changed "$target" "$(deps)"; then
       compile
     fi
     ;;

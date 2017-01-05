@@ -1,0 +1,11 @@
+#!/bin/bash
+
+f="$1"; shift
+
+if [[ ! -f "$f" ]]; then
+  exit 0
+elif [[ -n "$(find $@ -newer $f)" ]]; then
+  exit 0
+else
+  exit 1
+fi
