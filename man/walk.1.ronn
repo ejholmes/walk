@@ -27,7 +27,9 @@ etc. walk(1) provides a general UNIX utility to express a DAG as a set of target
     Show stdout from rules when executing the **exec** phase.
 
   * `-d`:
-    Print the dependencies of the target(s).
+    Print the dependencies of the target(s). This can be used in conjunction
+    with a file watching utility like fswatch(1) to execute a target whenever
+    its dependencies have changed.
 
 ## TARGETS
 
