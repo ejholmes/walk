@@ -2,7 +2,7 @@
 
 walk(1) is a fast, lightweight, general purpose, graph based build and task execution utility.
 
-Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
+Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https://github.com/apenwarr/redo).
 
 ![](./docs/walk.gif)
 
@@ -11,6 +11,7 @@ Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 * Fast parallel execution.
 * Graph based dependency management.
 * Maximum composability with existing UNIX tooling.
+* Describe targets and their dependencies as simple executables.
 
 ## Installation
 
