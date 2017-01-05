@@ -8,10 +8,10 @@ walk(1) -- A fast, lightweight, general purpose build and task execution utility
 
 ## OPTIONS
 
-  * `-v`
+  * `-v`:
     Show stdout from rules when executing the **exec** phase.
 
-  * `-p`
+  * `-p`:
     Only plan the execution and print the graph. Does not execute the **exec** phase.
 
 ## BUGS
