@@ -1,5 +1,5 @@
-walk(1) -- A fast, lightweight, general purpose build and task execution utility.
-=======================================================
+walk(1) -- A fast, lightweight, general purpose, graph based build and task execution utility.
+==============================================================================================
 
 ## SYNOPSIS
 

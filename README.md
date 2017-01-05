@@ -1,6 +1,6 @@
 # [Walk](http://ejholmes.io/walk/)
 
-walk(1) is a fast, lightweight, general purpose build and task execution system.
+walk(1) is a fast, lightweight, general purpose, graph based build and task execution utility.
 
 Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
 
