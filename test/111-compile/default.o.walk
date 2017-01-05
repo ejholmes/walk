@@ -1,24 +1,25 @@
 #!/bin/bash
 
 target=$2
-source_file=${2%.o}.c
+src=${2//.o/.c}
 
 deps() {
-  gcc -MM $source_file | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
+  gcc -MM $src | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
 }
 
 # Returns true if any of the dependencies are newer than the object file.
 changed() {
-  for d in $(deps); do
-    if [[ "$d" -nt "$target" ]]; then
-      return 0
-    fi
-  done
-  return 1
+  if [[ ! -f "$target" ]]; then
+    return 0
+  elif [[ -n "$(find $(deps) -newer $target)" ]]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 compile() {
-  gcc -Wall -o $target -c $source_file
+  gcc -Wall -o $target -c $src
 }
 
 case $1 in
