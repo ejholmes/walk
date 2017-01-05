@@ -36,21 +36,21 @@ type Target interface {
 	Name() string
 }
 
-// NewTarget returns a new Target instance backed by a FileTarget.
+// NewTarget returns a new Target instance backed by a target.
 func NewTarget(name string) (Target, error) {
 	return newTarget(nil, os.Stderr)(name)
 }
 
 func newTarget(stdout, stderr io.Writer) func(string) (Target, error) {
 	return func(name string) (Target, error) {
-		t, err := newFileTarget(name)
+		t, err := newtarget(name)
 		if err != nil {
 			return nil, err
 		}
 		t.stdout = stdout
 		t.stderr = stderr
-		vt := &verboseFileTarget{
-			FileTarget: t,
+		vt := &verboseTarget{
+			target: t,
 		}
 		return vt, nil
 	}
@@ -82,11 +82,14 @@ func newPlan() *Plan {
 	}
 }
 
+// String implements the fmt.Stringer interface for Plan.
 func (p *Plan) String() string {
 	return p.graph.String()
 }
 
-// Plan builds the graph, starting with the given target.
+// Plan builds the graph, starting with the given target. It recursively
+// executes the "deps" phase of the targets rule, adding each dependency to the
+// graph as their found.
 func (p *Plan) Plan(ctx context.Context, targets ...string) error {
 	for _, target := range targets {
 		_, err := p.newTarget(ctx, target)
@@ -103,6 +106,8 @@ func (p *Plan) Plan(ctx context.Context, targets ...string) error {
 	return p.graph.Validate()
 }
 
+// addTarget adds the given Target to the graph, as well as it's dependencies,
+// then connects the target to it's dependency with and edge.
 func (p *Plan) addTarget(ctx context.Context, t Target) error {
 	p.graph.Add(t)
 
@@ -122,6 +127,8 @@ func (p *Plan) addTarget(ctx context.Context, t Target) error {
 	return nil
 }
 
+// newTarget instantiates a new Target instance using the Plan's NewTarget
+// method, and adds it to the graph, if it hasn't already been added.
 func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 	// Target already exists in the graph.
 	if t := p.graph.Target(target); t != nil {
@@ -136,7 +143,9 @@ func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 	return t, p.addTarget(ctx, t)
 }
 
-// Exec executes the plan.
+// Exec begins walking the graph, executing the "exec" phase of each targets
+// Rule. Targets Exec functions are gauranteed to be called when all of the
+// Targets dependencies have been fulfilled.
 func (p *Plan) Exec(ctx context.Context) error {
 	err := p.graph.Walk(func(t Target) error {
 		return t.Exec(ctx)
@@ -145,28 +154,28 @@ func (p *Plan) Exec(ctx context.Context) error {
 }
 
 type fileBuildError struct {
-	target *FileTarget
+	target *target
 	err    error
 }
 
 func (e *fileBuildError) Error() string {
 	prefix := fmt.Sprintf("error performing %s", e.target.Name())
-	if e.target.walkfile != "" {
-		prefix += fmt.Sprintf(" (using %s)", e.target.walkfile)
+	if e.target.rulefile != "" {
+		prefix += fmt.Sprintf(" (using %s)", e.target.rulefile)
 	}
 	return fmt.Sprintf("%s: %v", prefix, e.err)
 }
 
-// FileTarget extends a Target that's represented by a file.
-type FileTarget struct {
+// target extends a Target that's represented by a file.
+type target struct {
 	// Relative path to the file.
 	name string
 
 	// The absolute path to the file.
 	path string
 
-	// path to the walkfile to use.
-	walkfile string
+	// path to the rulefile to use.
+	rulefile string
 
 	// the directory to use as the working directory when executing the
 	// build file.
@@ -175,38 +184,39 @@ type FileTarget struct {
 	stdout, stderr io.Writer
 }
 
-// newFileTarget initializes and returns a new FileTarget instance.
-func newFileTarget(name string) (*FileTarget, error) {
+// newtarget initializes and returns a new target instance.
+func newtarget(name string) (*target, error) {
 	path, err := filepath.Abs(name)
 	if err != nil {
 		return nil, err
 	}
 
-	walkfile, err := walkFile(path)
+	rulefile, err := ruleFile(path)
 	if err != nil {
 		return nil, err
 	}
 
 	var dir string
-	if walkfile != "" {
+	if rulefile != "" {
 		dir = filepath.Dir(path)
 	}
 
-	return &FileTarget{
+	return &target{
 		name:     name,
 		path:     path,
-		walkfile: walkfile,
+		rulefile: rulefile,
 		dir:      dir,
 	}, nil
 }
 
-func (t *FileTarget) Name() string {
+// Name implements the Target interface.
+func (t *target) Name() string {
 	return t.name
 }
 
-// Exec executes the FileTarget.
-func (t *FileTarget) Exec(ctx context.Context) error {
-	if t.walkfile == "" {
+// Exec executes the rule with "exec" as the first argument.
+func (t *target) Exec(ctx context.Context) error {
+	if t.rulefile == "" {
 		// It's possible for a target to simply be a static file, in which case
 		// we don't need to perform a build. We do however want to ensure that
 		// it exists in this case.
@@ -218,9 +228,10 @@ func (t *FileTarget) Exec(ctx context.Context) error {
 	return cmd.Run()
 }
 
-func (t *FileTarget) Dependencies(ctx context.Context) ([]string, error) {
+// Dependencies executes the rule with "deps" as the first argument.
+func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 	// No .walk file, meaning it's a static dependency.
-	if t.walkfile == "" {
+	if t.rulefile == "" {
 		return nil, nil
 	}
 
@@ -252,34 +263,34 @@ func (t *FileTarget) Dependencies(ctx context.Context) ([]string, error) {
 	return deps, scanner.Err()
 }
 
-func (t *FileTarget) ruleCommand(ctx context.Context, subcommand string) *exec.Cmd {
+func (t *target) ruleCommand(ctx context.Context, phase string) *exec.Cmd {
 	name := filepath.Base(t.path)
-	cmd := exec.CommandContext(ctx, t.walkfile, subcommand, name)
+	cmd := exec.CommandContext(ctx, t.rulefile, phase, name)
 	cmd.Stdout = t.stdout
 	cmd.Stderr = t.stderr
 	cmd.Dir = t.dir
 	return cmd
 }
 
-type verboseFileTarget struct {
-	*FileTarget
+type verboseTarget struct {
+	*target
 }
 
-func (t *verboseFileTarget) Exec(ctx context.Context) error {
-	err := t.FileTarget.Exec(ctx)
+func (t *verboseTarget) Exec(ctx context.Context) error {
+	err := t.target.Exec(ctx)
 	if err != nil {
-		return &fileBuildError{t.FileTarget, err}
+		return &fileBuildError{t.target, err}
 	}
-	if err == nil && t.walkfile != "" {
+	if err == nil && t.rulefile != "" {
 		fmt.Printf("%s\n", ansi("32", "%s", t.Name()))
 	}
 	return err
 }
 
-// walkFile returns the path to the .walk file that should be used to execute
-// this target. If the target has no appropriate .walk file, then "" is
+// ruleFile returns the path to the executable rule that should be used to
+// execute this target. If the target has no appropriate .walk file, then "" is
 // returned.
-func walkFile(path string) (string, error) {
+func ruleFile(path string) (string, error) {
 	dir := filepath.Dir(path)
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
