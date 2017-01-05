@@ -1,0 +1,16 @@
+#!/bin/bash
+
+target=$2
+
+deps() {
+  echo "$target".ronn
+}
+
+build() {
+  ronn "$target".ronn 2>&1 > /dev/null
+}
+
+case $1 in
+  deps) deps ;;
+  exec) build ;;
+esac

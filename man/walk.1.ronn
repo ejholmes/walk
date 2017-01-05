@@ -1,0 +1,27 @@
+walk(1) -- A fast, lightweight, general purpose build and task execution utility.
+=======================================================
+
+## SYNOPSIS
+
+`walk` `--version`<br>
+`walk` [target]
+
+## OPTIONS
+
+  * `-v`
+    Show stdout from rules when executing the **exec** phase.
+
+  * `-p`
+    Only plan the execution and print the graph. Does not execute the **exec** phase.
+
+## BUGS
+
+You can find a list of bugs at https://github.com/ejholmes/walk/issues. Please report any issues there.
+
+## COPYRIGHT
+
+Walk is Copyright (C) 2017 Eric Holmes
+
+## SEE ALSO
+
+make(1), bash(1)
