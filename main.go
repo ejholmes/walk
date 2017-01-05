@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/ejholmes/walk/internal/tty"
 )
@@ -34,7 +36,16 @@ func main() {
 	plan := newPlan()
 	plan.NewTarget = newTarget(stdout(*verbose), os.Stderr)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		for {
+			<-c
+			cancel()
+		}
+	}()
 
 	must(plan.Plan(ctx, target))
 	if *onlyplan {
