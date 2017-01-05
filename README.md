@@ -1,6 +1,14 @@
+# [Walk](http://ejholmes.io/walk/)
+
 walk(1) is a fast, lightweight, general purpose build and task execution system.
 
 Heavily inspired by `make` and [redo](https://github.com/apenwarr/redo).
+
+## Features
+
+* Fast parallel execution.
+* Graph based dependency management.
+* Maximum composability with existing UNIX tooling.
 
 ## Installation
 
