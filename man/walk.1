@@ -19,7 +19,7 @@ walk(1) is a small utility that can be used to execute tasks, or build programs 
 At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, etc\. walk(1) provides a general UNIX utility to express a DAG as a set of targets (files) that depend on each other\.
 .
 .P
-walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css/sass/) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it\'s dependencies can be built\.
+walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css, sass, coffeescript, etc) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it\'s dependencies can be built\.
 .
 .SH "OPTIONS"
 .
@@ -129,7 +129,26 @@ For mostly legacy reasons, make(1) determines whether a target needs to be built
 Recursive make is generally a mistake\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\.
 .
 .SH "EXAMPLES"
-When \fBwalk\fR is invoked without any arguments, it defaults to a target called "all":
+For the following examples, we\'ll assume that we want to build a program called hello \fIhttps://github\.com/ejholmes/walk/tree/master/test/111\-compile\fR from \fBhello\.c\fR and \fBhello\.h\fR\. This can be expressed as a DAG, like the following:
+.
+.IP "" 4
+.
+.nf
+
+                              all
+                               |
+                             hello
+                               |
+                            hello\.o
+                            /     \e
+                        hello\.c hello\.h
+.
+.fi
+.
+.IP "" 0
+.
+.P
+When \fBwalk\fR is invoked without any arguments, it defaults to a target called \fBall\fR:
 .
 .IP "" 4
 .
@@ -148,22 +167,22 @@ You can provide one or more targets as arguments to specify where to start execu
 .
 .nf
 
-walk src/hello\.o
+walk hello\.o
 .
 .fi
 .
 .IP "" 0
 .
 .P
-When rules are executed, they\'re always executed relative to the basename of the target\. This means that we can execute walk from any directory, and always get the same behavior\. All of the following are identical:
+When rules are executed, they\'re always executed relative to the basename of the target\. This means that we can execute \fBwalk\fR from any directory, and always get the same behavior\. All of the following are identical:
 .
 .IP "" 4
 .
 .nf
 
-walk src/hello\.o
-cd src && walk hello\.o
-cd / && walk home/ejholmes/src/hello\.o
+walk hello\.o
+cd \.\. && walk 111\-compile/hello\.o
+cd \.\. && walk test/111\-compile/hello\.o
 .
 .fi
 .

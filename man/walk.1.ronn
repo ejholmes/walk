@@ -22,8 +22,9 @@ etc. walk(1) provides a general UNIX utility to express a DAG as a set of target
 (files) that depend on each other.
 
 walk(1) can be used to build just about anything, from C/C++ programs to
-frontend applications (css/sass/) and infrastructure (CloudFormation,
-Terraform). Basically, anything that can express it's dependencies can be built.
+frontend applications (css, sass, coffeescript, etc) and infrastructure
+(CloudFormation, Terraform). Basically, anything that can express it's
+dependencies can be built.
 
 ## OPTIONS
 
@@ -139,7 +140,20 @@ walk(1) may be better in certain scenarios:
 
 ## EXAMPLES
 
-When `walk` is invoked without any arguments, it defaults to a target called "all":
+For the following examples, we'll assume that we want to build a program called
+[hello](https://github.com/ejholmes/walk/tree/master/test/111-compile) from
+`hello.c` and `hello.h`. This can be expressed as a DAG, like the following:
+
+                                  all
+                                   |
+                                 hello
+                                   |
+                                hello.o
+                                /     \
+                            hello.c hello.h
+
+
+When `walk` is invoked without any arguments, it defaults to a target called `all`:
 
     walk
 
@@ -147,15 +161,15 @@ You can provide one or more targets as arguments to specify where to start
 execution from. For example, if wanted to build just `hello.o` and any of it's
 dependencies:
 
-    walk src/hello.o
+    walk hello.o
 
 When rules are executed, they're always executed relative to the basename of
-the target. This means that we can execute walk from any directory, and always
-get the same behavior. All of the following are identical:
+the target. This means that we can execute `walk` from any directory, and
+always get the same behavior. All of the following are identical:
 
-    walk src/hello.o
-    cd src && walk hello.o
-    cd / && walk home/ejholmes/src/hello.o
+    walk hello.o
+    cd .. && walk 111-compile/hello.o
+    cd .. && walk test/111-compile/hello.o
 
 See more at <https://github.com/ejholmes/walk/tree/master/test>.
 

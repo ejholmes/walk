@@ -99,8 +99,9 @@ etc. <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> pr
 (files) that depend on each other.</p>
 
 <p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> can be used to build just about anything, from C/C++ programs to
-frontend applications (css/sass/) and infrastructure (CloudFormation,
-Terraform). Basically, anything that can express it's dependencies can be built.</p>
+frontend applications (css, sass, coffeescript, etc) and infrastructure
+(CloudFormation, Terraform). Basically, anything that can express it's
+dependencies can be built.</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
@@ -218,7 +219,20 @@ execute <code>walk</code> from any directory, and always get the same result.</d
 
 <h2 id="EXAMPLES">EXAMPLES</h2>
 
-<p>When <code>walk</code> is invoked without any arguments, it defaults to a target called "all":</p>
+<p>For the following examples, we'll assume that we want to build a program called
+<a href="https://github.com/ejholmes/walk/tree/master/test/111-compile">hello</a> from
+<code>hello.c</code> and <code>hello.h</code>. This can be expressed as a DAG, like the following:</p>
+
+<pre><code>                              all
+                               |
+                             hello
+                               |
+                            hello.o
+                            /     \
+                        hello.c hello.h
+</code></pre>
+
+<p>When <code>walk</code> is invoked without any arguments, it defaults to a target called <code>all</code>:</p>
 
 <pre><code>walk
 </code></pre>
@@ -227,16 +241,16 @@ execute <code>walk</code> from any directory, and always get the same result.</d
 execution from. For example, if wanted to build just <code>hello.o</code> and any of it's
 dependencies:</p>
 
-<pre><code>walk src/hello.o
+<pre><code>walk hello.o
 </code></pre>
 
 <p>When rules are executed, they're always executed relative to the basename of
-the target. This means that we can execute walk from any directory, and always
-get the same behavior. All of the following are identical:</p>
+the target. This means that we can execute <code>walk</code> from any directory, and
+always get the same behavior. All of the following are identical:</p>
 
-<pre><code>walk src/hello.o
-cd src &amp;&amp; walk hello.o
-cd / &amp;&amp; walk home/ejholmes/src/hello.o
+<pre><code>walk hello.o
+cd .. &amp;&amp; walk 111-compile/hello.o
+cd .. &amp;&amp; walk test/111-compile/hello.o
 </code></pre>
 
 <p>See more at <a href="https://github.com/ejholmes/walk/tree/master/test" data-bare-link="true">https://github.com/ejholmes/walk/tree/master/test</a>.</p>
