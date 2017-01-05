@@ -27,10 +27,9 @@ func main() {
 	)
 	flag.Parse()
 
-	target := DefaultTarget
-	args := flag.Args()
-	if len(args) >= 1 {
-		target = args[0]
+	targets := flag.Args()
+	if len(targets) == 0 {
+		targets = []string{DefaultTarget}
 	}
 
 	plan := newPlan()
@@ -47,7 +46,7 @@ func main() {
 		}
 	}()
 
-	must(plan.Plan(ctx, target))
+	must(plan.Plan(ctx, targets...))
 	if *onlyplan {
 		fmt.Print(plan)
 	} else {

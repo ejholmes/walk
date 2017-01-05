@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"sync"
 
 	"github.com/ejholmes/walk/internal/dag"
@@ -52,7 +53,13 @@ func (g *Graph) Target(name string) Target {
 // Walk wraps the underlying Walk function to coerce it to a Target first.
 func (g *Graph) Walk(fn func(Target) error) error {
 	return g.dag.Walk(func(v dag.Vertex) error {
-		return fn(g.Target(v.(string)))
+		target := g.Target(v.(string))
+		// We don't actually need to walk the root, since it's a psuedo
+		// target.
+		if _, ok := target.(*rootTarget); ok {
+			return nil
+		}
+		return fn(target)
 	})
 }
 
@@ -66,4 +73,21 @@ func (g *Graph) String() string {
 
 func (g *Graph) target(name string) Target {
 	return g.m[name]
+}
+
+// rootTarget is a psuedo target for the root of the graph.
+type rootTarget struct {
+	deps []string
+}
+
+func (t *rootTarget) Name() string {
+	return "(root)"
+}
+
+func (t *rootTarget) Exec(_ context.Context) error {
+	panic("unreachable")
+}
+
+func (t *rootTarget) Dependencies(_ context.Context) ([]string, error) {
+	return t.deps, nil
 }

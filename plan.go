@@ -61,9 +61,9 @@ type Plan struct {
 }
 
 // Exec is a simple helper to build and execute a Plan.
-func Exec(ctx context.Context, target string) error {
+func Exec(ctx context.Context, targets ...string) error {
 	plan := newPlan()
-	err := plan.Plan(ctx, target)
+	err := plan.Plan(ctx, targets...)
 	if err != nil {
 		return err
 	}
@@ -82,16 +82,42 @@ func (p *Plan) String() string {
 }
 
 // Plan builds the graph, starting with the given target.
-func (p *Plan) Plan(ctx context.Context, target string) error {
-	_, err := p.addTarget(ctx, target)
-	if err != nil {
+func (p *Plan) Plan(ctx context.Context, targets ...string) error {
+	for _, target := range targets {
+		_, err := p.newTarget(ctx, target)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Add a root target, with all of the given targets as it's dependency.
+	if err := p.addTarget(ctx, &rootTarget{deps: targets}); err != nil {
 		return err
 	}
 
 	return p.graph.Validate()
 }
 
-func (p *Plan) addTarget(ctx context.Context, target string) (Target, error) {
+func (p *Plan) addTarget(ctx context.Context, t Target) error {
+	p.graph.Add(t)
+
+	deps, err := t.Dependencies(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting dependencies for %s: %v", t.Name(), err)
+	}
+
+	for _, d := range deps {
+		dep, err := p.newTarget(ctx, d)
+		if err != nil {
+			return err
+		}
+		p.graph.Connect(t, dep)
+	}
+
+	return nil
+}
+
+func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 	// Target already exists in the graph.
 	if t := p.graph.Target(target); t != nil {
 		return t, nil
@@ -102,22 +128,7 @@ func (p *Plan) addTarget(ctx context.Context, target string) (Target, error) {
 		return t, err
 	}
 
-	p.graph.Add(t)
-
-	deps, err := t.Dependencies(ctx)
-	if err != nil {
-		return t, fmt.Errorf("error getting dependencies for %s: %v", target, err)
-	}
-
-	for _, d := range deps {
-		dep, err := p.addTarget(ctx, d)
-		if err != nil {
-			return t, err
-		}
-		p.graph.Connect(t, dep)
-	}
-
-	return t, nil
+	return t, p.addTarget(ctx, t)
 }
 
 // Exec executes the plan.

@@ -4,7 +4,11 @@ walk(1) -- A fast, lightweight, general purpose build and task execution utility
 ## SYNOPSIS
 
 `walk` `--version`<br>
-`walk` [target]
+`walk` [target1] [target2] ...
+
+## DESCRIPTION
+
+TODO
 
 ## OPTIONS
 
@@ -13,6 +17,16 @@ walk(1) -- A fast, lightweight, general purpose build and task execution utility
 
   * `-p`:
     Only plan the execution and print the graph. Does not execute the **exec** phase.
+
+TODO
+
+## TARGETS
+
+TODO
+
+## PHASES
+
+TODO
 
 ## BUGS
 
