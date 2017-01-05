@@ -81,12 +81,12 @@
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
 <p><code>walk</code> <code>--version</code><br />
-<code>walk</code> [target1] [target2] ...</p>
+<code>walk</code> [<code>-vd</code>] [target...]</p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
-<p>Walk is a small utility that can be used to execute tasks, or build programs
-from source. It's similar to make in many ways, but with some fundamental
+<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> is a small utility that can be used to execute tasks, or build programs
+from source. It's similar to <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a> in many ways, but with some fundamental
 differences that make it vastly simpler, and arguably more powerful.</p>
 
 <p>At the core of <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> is a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed Acyclic
@@ -97,6 +97,10 @@ You'll find DAG's everywhere; in
 <a href="https://github.com/hashicorp/terraform/tree/master/dag">infrastructure tools</a>,
 etc. <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> provides a general UNIX utility to express a DAG as a set of targets
 (files) that depend on each other.</p>
+
+<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> can be used to build just about anything, from C/C++ programs to
+frontend applications (css/sass/) and infrastructure (CloudFormation,
+Terraform). Basically, anything that can express it's dependencies can be built.</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
@@ -111,7 +115,13 @@ its dependencies have changed.</p></dd>
 <h2 id="TARGETS">TARGETS</h2>
 
 <p>Targets can be used to represent a task, or a file that needs to be built. They
-are synonymous with targets in <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>.</p>
+are synonymous with targets in <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>. In general, targets are relative paths
+to files that need to be built, like <code>src/hello.o</code>. When a target does not
+relate to an actual file on task, it's synonymous with <code>.PHONY</code> targets in
+<a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>.</p>
+
+<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> will look for a "rule" file to determine if it has dependencies, or
+needs to be built. Rules are described below.</p>
 
 <h2 id="RULES">RULES</h2>
 
@@ -123,12 +133,43 @@ or any files inside a <code>.walk</code> directory. As an example, say we wanted
 <code>hello.o</code> by executing <code>walk hello.o</code>. <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> will attempt, in order, the
 following files:</p>
 
-<p>  .walk/hello.o<br />
-  hello.o.walk<br />
-  .walk/default.o<br />
-  default.o.walk<br /></p>
+<pre><code>.walk/hello.o
+hello.o.walk
+.walk/default.o
+default.o.walk
+</code></pre>
 
-<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> will only look for this files in the same directory that the target is
+<p>As an example, a simple rule file for building <code>.o</code> files from <code>.c</code> files,
+could be named <code>default.o.walk</code> and might look like this:</p>
+
+<pre><code>#!/bin/bash
+
+target=$2
+src=${2//.o/.c}
+
+deps() {
+  echo $src
+}
+
+compile() {
+  gcc -Wall -o $target -c $src
+}
+
+case $1 in
+  deps) deps ;;
+  exec) compile ;;
+esac
+</code></pre>
+
+<p>When walk executes a rule, it executes it with the following positional arguments:</p>
+
+<dl>
+<dt class="flush"><code>$1</code></dt><dd><p>The <a href="#PHASES" title="PHASES" data-bare-link="true">phase</a> (<code>deps</code> or <code>exec</code>).</p></dd>
+<dt class="flush"><code>$2</code></dt><dd><p>The name of the target to build (e.g. <code>hello.o</code>).</p></dd>
+</dl>
+
+
+<p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> will only look for these files in the same directory that the target is
 in. If no suitable rule is found, and the file already exists, then <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a>
 assumes that it's a static file and does nothing.</p>
 
@@ -177,7 +218,28 @@ execute <code>walk</code> from any directory, and always get the same result.</d
 
 <h2 id="EXAMPLES">EXAMPLES</h2>
 
-<p>See <a href="https://github.com/ejholmes/walk/tree/master/test" data-bare-link="true">https://github.com/ejholmes/walk/tree/master/test</a> for examples.</p>
+<p>When <code>walk</code> is invoked without any arguments, it defaults to a target called "all":</p>
+
+<pre><code>walk
+</code></pre>
+
+<p>You can provide one or more targets as arguments to specify where to start
+execution from. For example, if wanted to build just <code>hello.o</code> and any of it's
+dependencies:</p>
+
+<pre><code>walk src/hello.o
+</code></pre>
+
+<p>When rules are executed, they're always executed relative to the basename of
+the target. This means that we can execute walk from any directory, and always
+get the same behavior. All of the following are identical:</p>
+
+<pre><code>walk src/hello.o
+cd src &amp;&amp; walk hello.o
+cd / &amp;&amp; walk home/ejholmes/src/hello.o
+</code></pre>
+
+<p>See more at <a href="https://github.com/ejholmes/walk/tree/master/test" data-bare-link="true">https://github.com/ejholmes/walk/tree/master/test</a>.</p>
 
 <h2 id="BUGS">BUGS</h2>
 

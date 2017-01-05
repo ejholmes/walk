@@ -4,12 +4,12 @@ walk(1) -- A fast, lightweight, general purpose build and task execution utility
 ## SYNOPSIS
 
 `walk` `--version`<br>
-`walk` [target1] [target2] ...
+`walk` [`-vd`] [target...]
 
 ## DESCRIPTION
 
-Walk is a small utility that can be used to execute tasks, or build programs
-from source. It's similar to make in many ways, but with some fundamental
+walk(1) is a small utility that can be used to execute tasks, or build programs
+from source. It's similar to make(1) in many ways, but with some fundamental
 differences that make it vastly simpler, and arguably more powerful.
 
 At the core of walk(1) is a [Directed Acyclic
@@ -20,6 +20,10 @@ You'll find DAG's everywhere; in
 [infrastructure tools](https://github.com/hashicorp/terraform/tree/master/dag),
 etc. walk(1) provides a general UNIX utility to express a DAG as a set of targets
 (files) that depend on each other.
+
+walk(1) can be used to build just about anything, from C/C++ programs to
+frontend applications (css/sass/) and infrastructure (CloudFormation,
+Terraform). Basically, anything that can express it's dependencies can be built.
 
 ## OPTIONS
 
@@ -34,7 +38,13 @@ etc. walk(1) provides a general UNIX utility to express a DAG as a set of target
 ## TARGETS
 
 Targets can be used to represent a task, or a file that needs to be built. They
-are synonymous with targets in make(1).
+are synonymous with targets in make(1). In general, targets are relative paths
+to files that need to be built, like `src/hello.o`. When a target does not
+relate to an actual file on task, it's synonymous with `.PHONY` targets in
+make(1).
+
+walk(1) will look for a "rule" file to determine if it has dependencies, or
+needs to be built. Rules are described below.
 
 ## RULES
 
@@ -46,12 +56,41 @@ or any files inside a `.walk` directory. As an example, say we wanted to build
 `hello.o` by executing `walk hello.o`. walk(1) will attempt, in order, the
 following files:
 
-  .walk/hello.o<br>
-  hello.o.walk<br>
-  .walk/default.o<br>
-  default.o.walk<br>
+    .walk/hello.o
+    hello.o.walk
+    .walk/default.o
+    default.o.walk
 
-walk(1) will only look for this files in the same directory that the target is
+As an example, a simple rule file for building `.o` files from `.c` files,
+could be named `default.o.walk` and might look like this:
+
+    #!/bin/bash
+    
+    target=$2
+    src=${2//.o/.c}
+    
+    deps() {
+      echo $src
+    }
+    
+    compile() {
+      gcc -Wall -o $target -c $src
+    }
+    
+    case $1 in
+      deps) deps ;;
+      exec) compile ;;
+    esac
+
+When walk executes a rule, it executes it with the following positional arguments:
+
+  * `$1`:
+    The [phase][PHASES] (`deps` or `exec`).
+  
+  * `$2`:
+    The name of the target to build (e.g. `hello.o`).
+
+walk(1) will only look for these files in the same directory that the target is
 in. If no suitable rule is found, and the file already exists, then walk(1)
 assumes that it's a static file and does nothing.
 
@@ -100,7 +139,25 @@ walk(1) may be better in certain scenarios:
 
 ## EXAMPLES
 
-See <https://github.com/ejholmes/walk/tree/master/test> for examples.
+When `walk` is invoked without any arguments, it defaults to a target called "all":
+
+    walk
+
+You can provide one or more targets as arguments to specify where to start
+execution from. For example, if wanted to build just `hello.o` and any of it's
+dependencies:
+
+    walk src/hello.o
+
+When rules are executed, they're always executed relative to the basename of
+the target. This means that we can execute walk from any directory, and always
+get the same behavior. All of the following are identical:
+
+    walk src/hello.o
+    cd src && walk hello.o
+    cd / && walk home/ejholmes/src/hello.o
+
+See more at <https://github.com/ejholmes/walk/tree/master/test>.
 
 ## BUGS
 

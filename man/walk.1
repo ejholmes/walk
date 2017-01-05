@@ -10,13 +10,16 @@
 \fBwalk\fR \fB\-\-version\fR
 .
 .br
-\fBwalk\fR [target1] [target2] \.\.\.
+\fBwalk\fR [\fB\-vd\fR] [target\.\.\.]
 .
 .SH "DESCRIPTION"
-Walk is a small utility that can be used to execute tasks, or build programs from source\. It\'s similar to make in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
+walk(1) is a small utility that can be used to execute tasks, or build programs from source\. It\'s similar to make(1) in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
 .
 .P
 At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, etc\. walk(1) provides a general UNIX utility to express a DAG as a set of targets (files) that depend on each other\.
+.
+.P
+walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css/sass/) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it\'s dependencies can be built\.
 .
 .SH "OPTIONS"
 .
@@ -29,7 +32,10 @@ Show stdout from rules when executing the \fBexec\fR phase\.
 Print the dependencies of the target(s)\. This can be used in conjunction with a file watching utility like fswatch(1) to execute a target whenever its dependencies have changed\.
 .
 .SH "TARGETS"
-Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\.
+Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on task, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
+.
+.P
+walk(1) will look for a "rule" file to determine if it has dependencies, or needs to be built\. Rules are described below\.
 .
 .SH "RULES"
 Rules determine \fIhow\fR a target is built, and are defined as executable files\.
@@ -37,22 +43,61 @@ Rules determine \fIhow\fR a target is built, and are defined as executable files
 .P
 When walk(1) begins execution of a target, it first attempts to find a compatible rule for the target by looking at executable files ending in \fB\.walk\fR or any files inside a \fB\.walk\fR directory\. As an example, say we wanted to build \fBhello\.o\fR by executing \fBwalk hello\.o\fR\. walk(1) will attempt, in order, the following files:
 .
-.P
+.IP "" 4
+.
+.nf
+
 \&\.walk/hello\.o
-.
-.br
 hello\.o\.walk
-.
-.br
-\&\.walk/default\.o
-.
-.br
+\.walk/default\.o
 default\.o\.walk
 .
-.br
+.fi
+.
+.IP "" 0
 .
 .P
-walk(1) will only look for this files in the same directory that the target is in\. If no suitable rule is found, and the file already exists, then walk(1) assumes that it\'s a static file and does nothing\.
+As an example, a simple rule file for building \fB\.o\fR files from \fB\.c\fR files, could be named \fBdefault\.o\.walk\fR and might look like this:
+.
+.IP "" 4
+.
+.nf
+
+#!/bin/bash
+
+target=$2
+src=${2//\.o/\.c}
+
+deps() {
+  echo $src
+}
+
+compile() {
+  gcc \-Wall \-o $target \-c $src
+}
+
+case $1 in
+  deps) deps ;;
+  exec) compile ;;
+esac
+.
+.fi
+.
+.IP "" 0
+.
+.P
+When walk executes a rule, it executes it with the following positional arguments:
+.
+.TP
+\fB$1\fR
+The \fIphase\fR (\fBdeps\fR or \fBexec\fR)\.
+.
+.TP
+\fB$2\fR
+The name of the target to build (e\.g\. \fBhello\.o\fR)\.
+.
+.P
+walk(1) will only look for these files in the same directory that the target is in\. If no suitable rule is found, and the file already exists, then walk(1) assumes that it\'s a static file and does nothing\.
 .
 .SH "PHASES"
 walk(1) has two phases:
@@ -84,7 +129,48 @@ For mostly legacy reasons, make(1) determines whether a target needs to be built
 Recursive make is generally a mistake\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\.
 .
 .SH "EXAMPLES"
-See \fIhttps://github\.com/ejholmes/walk/tree/master/test\fR for examples\.
+When \fBwalk\fR is invoked without any arguments, it defaults to a target called "all":
+.
+.IP "" 4
+.
+.nf
+
+walk
+.
+.fi
+.
+.IP "" 0
+.
+.P
+You can provide one or more targets as arguments to specify where to start execution from\. For example, if wanted to build just \fBhello\.o\fR and any of it\'s dependencies:
+.
+.IP "" 4
+.
+.nf
+
+walk src/hello\.o
+.
+.fi
+.
+.IP "" 0
+.
+.P
+When rules are executed, they\'re always executed relative to the basename of the target\. This means that we can execute walk from any directory, and always get the same behavior\. All of the following are identical:
+.
+.IP "" 4
+.
+.nf
+
+walk src/hello\.o
+cd src && walk hello\.o
+cd / && walk home/ejholmes/src/hello\.o
+.
+.fi
+.
+.IP "" 0
+.
+.P
+See more at \fIhttps://github\.com/ejholmes/walk/tree/master/test\fR\.
 .
 .SH "BUGS"
 You can find a list of bugs at \fIhttps://github\.com/ejholmes/walk/issues\fR\. Please report any issues there\.
