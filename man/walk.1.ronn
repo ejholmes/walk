@@ -19,7 +19,7 @@ magical data structure that allow you to easily express dependency trees.
 You'll find DAG's everywhere; in
 [git](http://eagain.net/articles/git-for-computer-scientists/), languages,
 [infrastructure tools](https://github.com/hashicorp/terraform/tree/master/dag),
-etc. walk(1) provides a general UNIX utility to express a DAG as a set of targets
+etc. walk(1) provides a generic primitive to express a DAG as a set of targets
 (files) that depend on each other.
 
 walk(1) can be used to build just about anything, from C/C++ programs to
@@ -42,7 +42,7 @@ dependencies can be built.
 Targets can be used to represent a task, or a file that needs to be built. They
 are synonymous with targets in make(1). In general, targets are relative paths
 to files that need to be built, like `src/hello.o`. When a target does not
-relate to an actual file on task, it's synonymous with `.PHONY` targets in
+relate to an actual file on disk, it's synonymous with `.PHONY` targets in
 make(1).
 
 walk(1) will look for a "rule" file to determine if it has dependencies, or
@@ -50,7 +50,8 @@ needs to be built. Rules are described below.
 
 ## RULES
 
-Rules determine _how_ a target is built, and are defined as executable files.
+Rules determine _how_ a target is executed, and what other targets it depends
+on. Rules are defined as executable files.
 
 When walk(1) begins execution of a target, it first attempts to find a
 compatible rule for the target by looking at executable files ending in `.walk`
@@ -94,7 +95,7 @@ When walk executes a rule, it executes it with the following positional argument
 
 walk(1) will only look for these files in the same directory that the target is
 in. If no suitable rule is found, and the file already exists, then walk(1)
-assumes that it's a static file and does nothing.
+assumes that it's a static file, and simply checks for it's existence.
 
 ## PHASES
 
@@ -139,7 +140,7 @@ walk(1) may be better in certain scenarios:
     Recursive make is generally a mistake. Whole papers have been [written
     about this topic](http://aegis.sourceforge.net/auug97.pdf). Because of
     walk(1)'s design, you can execute `walk` from any directory, and always get
-    the same result.
+    the same result. Recursiveness comes for free.
 
 ## EXAMPLES
 
@@ -147,13 +148,13 @@ For the following examples, we'll assume that we want to build a program called
 [hello](https://github.com/ejholmes/walk/tree/master/test/111-compile) from
 `hello.c` and `hello.h`. This can be expressed as a DAG, like the following:
 
-                                  all
-                                   |
-                                 hello
-                                   |
-                                hello.o
-                                /     \
-                            hello.c hello.h
+                    all
+                     |
+                   hello
+                     |
+                  hello.o
+                  /     \
+              hello.c hello.h
 
 
 When `walk` is invoked without any arguments, it defaults to a target called `all`:
@@ -176,6 +177,13 @@ always get the same behavior. All of the following are identical:
 
 See more at <https://github.com/ejholmes/walk/tree/master/test>.
 
+## SIGNALS
+
+When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to
+any rules that are currently executing. With that in mind, it's a good idea to
+ensure that any potentially long running rules handle these signals to
+terminate gracefully.
+
 ## BUGS
 
 You can find a list of bugs at <https://github.com/ejholmes/walk/issues>.
@@ -188,3 +196,5 @@ Walk is Copyright (C) 2017 Eric Holmes
 ## SEE ALSO
 
 make(1), bash(1)
+
+# vi:filetype=markdown

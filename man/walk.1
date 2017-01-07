@@ -19,7 +19,7 @@
 walk(1) is a small utility that can be used to execute tasks, or build programs from source\. It\'s similar to make(1) in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
 .
 .P
-At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, etc\. walk(1) provides a general UNIX utility to express a DAG as a set of targets (files) that depend on each other\.
+At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, etc\. walk(1) provides a generic primitive to express a DAG as a set of targets (files) that depend on each other\.
 .
 .P
 walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css, sass, coffeescript, etc) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it\'s dependencies can be built\.
@@ -35,13 +35,13 @@ Show stdout from rules when executing the \fBexec\fR phase\.
 Print the dependencies of the target(s)\. This can be used in conjunction with a file watching utility like fswatch(1) to execute a target whenever its dependencies have changed\.
 .
 .SH "TARGETS"
-Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on task, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
+Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
 .
 .P
 walk(1) will look for a "rule" file to determine if it has dependencies, or needs to be built\. Rules are described below\.
 .
 .SH "RULES"
-Rules determine \fIhow\fR a target is built, and are defined as executable files\.
+Rules determine \fIhow\fR a target is executed, and what other targets it depends on\. Rules are defined as executable files\.
 .
 .P
 When walk(1) begins execution of a target, it first attempts to find a compatible rule for the target by looking at executable files ending in \fB\.walk\fR or any files inside a \fB\.walk\fR directory\. As an example, say we wanted to build \fBhello\.o\fR by executing \fBwalk hello\.o\fR\. walk(1) will attempt, in order, the following files:
@@ -100,7 +100,7 @@ The \fIphase\fR (\fBdeps\fR or \fBexec\fR)\.
 The name of the target to build (e\.g\. \fBhello\.o\fR)\.
 .
 .P
-walk(1) will only look for these files in the same directory that the target is in\. If no suitable rule is found, and the file already exists, then walk(1) assumes that it\'s a static file and does nothing\.
+walk(1) will only look for these files in the same directory that the target is in\. If no suitable rule is found, and the file already exists, then walk(1) assumes that it\'s a static file, and simply checks for it\'s existence\.
 .
 .SH "PHASES"
 walk(1) has two phases:
@@ -129,7 +129,7 @@ For mostly legacy reasons, make(1) determines whether a target needs to be built
 .
 .TP
 \fBRecursiveness\fR
-Recursive make is generally a mistake\. Whole papers have been written about this topic \fIhttp://aegis\.sourceforge\.net/auug97\.pdf\fR\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\.
+Recursive make is generally a mistake\. Whole papers have been written about this topic \fIhttp://aegis\.sourceforge\.net/auug97\.pdf\fR\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\. Recursiveness comes for free\.
 .
 .SH "EXAMPLES"
 For the following examples, we\'ll assume that we want to build a program called hello \fIhttps://github\.com/ejholmes/walk/tree/master/test/111\-compile\fR from \fBhello\.c\fR and \fBhello\.h\fR\. This can be expressed as a DAG, like the following:
@@ -138,13 +138,13 @@ For the following examples, we\'ll assume that we want to build a program called
 .
 .nf
 
-                              all
-                               |
-                             hello
-                               |
-                            hello\.o
-                            /     \e
-                        hello\.c hello\.h
+                all
+                 |
+               hello
+                 |
+              hello\.o
+              /     \e
+          hello\.c hello\.h
 .
 .fi
 .
@@ -193,6 +193,9 @@ cd \.\. && walk test/111\-compile/hello\.o
 .
 .P
 See more at \fIhttps://github\.com/ejholmes/walk/tree/master/test\fR\.
+.
+.SH "SIGNALS"
+When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to any rules that are currently executing\. With that in mind, it\'s a good idea to ensure that any potentially long running rules handle these signals to terminate gracefully\.
 .
 .SH "BUGS"
 You can find a list of bugs at \fIhttps://github\.com/ejholmes/walk/issues\fR\. Please report any issues there\.
