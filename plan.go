@@ -38,22 +38,7 @@ type Target interface {
 
 // NewTarget returns a new Target instance backed by a target.
 func NewTarget(name string) (Target, error) {
-	return newTarget(nil, os.Stderr)(name)
-}
-
-func newTarget(stdout, stderr io.Writer) func(string) (Target, error) {
-	return func(name string) (Target, error) {
-		t, err := newtarget(name)
-		if err != nil {
-			return nil, err
-		}
-		t.stdout = stdout
-		t.stderr = stderr
-		vt := &verboseTarget{
-			target: t,
-		}
-		return vt, nil
-	}
+	return newVerboseTarget(nil, os.Stderr)(name)
 }
 
 // Plan is used to build a graph of all the targets and their dependencies.
@@ -192,8 +177,8 @@ type target struct {
 	stdout, stderr io.Writer
 }
 
-// newtarget initializes and returns a new target instance.
-func newtarget(name string) (*target, error) {
+// newTarget initializes and returns a new target instance.
+func newTarget(name string) (*target, error) {
 	path, err := filepath.Abs(name)
 	if err != nil {
 		return nil, err
@@ -261,6 +246,9 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 	scanner := bufio.NewScanner(b)
 	for scanner.Scan() {
 		path := scanner.Text()
+		if path == "" {
+			continue
+		}
 		// Make all paths relative to the working directory.
 		path, err := filepath.Rel(t.wd, filepath.Join(t.dir, scanner.Text()))
 		if err != nil {

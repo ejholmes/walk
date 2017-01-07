@@ -36,7 +36,7 @@ func main() {
 	}
 
 	plan := newPlan()
-	plan.NewTarget = newTarget(stdout(*verbose), os.Stderr)
+	plan.NewTarget = newVerboseTarget(stdout(*verbose), os.Stderr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -58,6 +58,21 @@ func main() {
 		}
 	} else {
 		must(plan.Exec(ctx))
+	}
+}
+
+func newVerboseTarget(stdout, stderr io.Writer) func(string) (Target, error) {
+	return func(name string) (Target, error) {
+		t, err := newTarget(name)
+		if err != nil {
+			return nil, err
+		}
+		t.stdout = stdout
+		t.stderr = stderr
+		vt := &verboseTarget{
+			target: t,
+		}
+		return vt, nil
 	}
 }
 

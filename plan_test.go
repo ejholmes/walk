@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -42,6 +43,29 @@ func TestPlan_Cancel(t *testing.T) {
 	err := Exec(ctx, "test/000-cancel/all").(*dag.MultiError)
 	assert.Equal(t, 1, len(err.Errors))
 	assert.True(t, strings.Contains(err.Errors[0].Error(), "signal: killed"))
+}
+
+func TestTarget_Dependencies(t *testing.T) {
+	target, err := newTarget("test/110-compile/all")
+	assert.NoError(t, err)
+
+	deps, err := target.Dependencies(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"test/110-compile/hello", "test/110-compile/test"}, deps)
+
+	target.wd = filepath.Join(target.wd, "test")
+	deps, err = target.Dependencies(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"110-compile/hello", "110-compile/test"}, deps)
+}
+
+func TestTarget_Dependencies_EmptyTarget(t *testing.T) {
+	target, err := newTarget("test/000-empty-dependency/all")
+	assert.NoError(t, err)
+
+	deps, err := target.Dependencies(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"test/000-empty-dependency/a", "test/000-empty-dependency/b"}, deps)
 }
 
 func clean(t testing.TB) {

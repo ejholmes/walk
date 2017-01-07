@@ -1,0 +1,11 @@
+#!/bin/bash
+
+deps() {
+  echo a
+  echo # oops
+  echo b
+}
+
+case $1 in
+  deps) deps ;;
+esac
