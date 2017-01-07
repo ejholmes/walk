@@ -186,6 +186,9 @@ type target struct {
 	// build file.
 	dir string
 
+	// The working directory.
+	wd string
+
 	stdout, stderr io.Writer
 }
 
@@ -206,11 +209,17 @@ func newtarget(name string) (*target, error) {
 		dir = filepath.Dir(path)
 	}
 
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
 	return &target{
 		name:     name,
 		path:     path,
 		rulefile: rulefile,
 		dir:      dir,
+		wd:       wd,
 	}, nil
 }
 
@@ -248,17 +257,12 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
 	var deps []string
 	scanner := bufio.NewScanner(b)
 	for scanner.Scan() {
 		path := scanner.Text()
 		// Make all paths relative to the working directory.
-		path, err := filepath.Rel(wd, filepath.Join(t.dir, scanner.Text()))
+		path, err := filepath.Rel(t.wd, filepath.Join(t.dir, scanner.Text()))
 		if err != nil {
 			return deps, err
 		}
