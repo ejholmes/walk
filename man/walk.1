@@ -129,7 +129,7 @@ For mostly legacy reasons, make(1) determines whether a target needs to be built
 .
 .TP
 \fBRecursiveness\fR
-Recursive make is generally a mistake\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\.
+Recursive make is generally a mistake\. Whole papers have been written about this topic \fIhttp://aegis\.sourceforge\.net/auug97\.pdf\fR\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\.
 .
 .SH "EXAMPLES"
 For the following examples, we\'ll assume that we want to build a program called hello \fIhttps://github\.com/ejholmes/walk/tree/master/test/111\-compile\fR from \fBhello\.c\fR and \fBhello\.h\fR\. This can be expressed as a DAG, like the following:

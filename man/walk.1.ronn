@@ -136,8 +136,10 @@ walk(1) may be better in certain scenarios:
     to get around this handicap, but none that work well. walk(1) leaves
     conditional execution up to the Rule.
    * `Recursiveness`:
-    Recursive make is generally a mistake. Because of walk(1)'s design, you can
-    execute `walk` from any directory, and always get the same result.
+    Recursive make is generally a mistake. Whole papers have been [written
+    about this topic](http://aegis.sourceforge.net/auug97.pdf). Because of
+    walk(1)'s design, you can execute `walk` from any directory, and always get
+    the same result.
 
 ## EXAMPLES
 

@@ -213,8 +213,10 @@ mechanisms like content hashing may be more suitable. There are
 <a href="http://blog.jgc.org/2006/04/rebuilding-when-hash-has-changed-not.html">attempts</a>
 to get around this handicap, but none that work well. <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> leaves
 conditional execution up to the Rule.</dd>
-<dt> <code>Recursiveness</code></dt><dd>Recursive make is generally a mistake. Because of <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a>'s design, you can
-execute <code>walk</code> from any directory, and always get the same result.</dd>
+<dt> <code>Recursiveness</code></dt><dd>Recursive make is generally a mistake. Whole papers have been <a href="http://aegis.sourceforge.net/auug97.pdf">written
+about this topic</a>. Because of
+<a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a>'s design, you can execute <code>walk</code> from any directory, and always get
+the same result.</dd>
 </dl>
 
 
