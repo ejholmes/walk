@@ -29,9 +29,10 @@ func init() {
 func main() {
 	flag.Usage = usage
 	var (
-		version = flag.Bool("version", false, "Print the version of walk and exit.")
-		verbose = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
-		deps    = flag.Bool("d", false, "Print the dependencies of the target.")
+		version     = flag.Bool("version", false, "Print the version of walk and exit.")
+		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
+		deps        = flag.Bool("d", false, "Print the dependencies of the target.")
+		concurrency = flag.Uint("j", 0, "This controls the number of concurrent targets that are executed at once. A value of 0 means don't limit the number of concurrent targets. A value of 1 disables concurrency (serialized execution).")
 	)
 	flag.Parse()
 
@@ -70,7 +71,8 @@ func main() {
 			fmt.Println(t.Name())
 		}
 	} else {
-		must(plan.Exec(ctx))
+		semaphore := NewSemaphore(*concurrency)
+		must(plan.Exec(ctx, semaphore))
 	}
 }
 

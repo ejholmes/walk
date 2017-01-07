@@ -51,13 +51,13 @@ type Plan struct {
 }
 
 // Exec is a simple helper to build and execute a Plan.
-func Exec(ctx context.Context, targets ...string) error {
+func Exec(ctx context.Context, semaphore Semaphore, targets ...string) error {
 	plan := newPlan()
 	err := plan.Plan(ctx, targets...)
 	if err != nil {
 		return err
 	}
-	return plan.Exec(ctx)
+	return plan.Exec(ctx, semaphore)
 }
 
 func newPlan() *Plan {
@@ -142,9 +142,12 @@ func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 // Exec begins walking the graph, executing the "exec" phase of each targets
 // Rule. Targets Exec functions are gauranteed to be called when all of the
 // Targets dependencies have been fulfilled.
-func (p *Plan) Exec(ctx context.Context) error {
+func (p *Plan) Exec(ctx context.Context, semaphore Semaphore) error {
 	err := p.graph.Walk(func(t Target) error {
-		return t.Exec(ctx)
+		semaphore.P()
+		err := t.Exec(ctx)
+		semaphore.V()
+		return err
 	})
 	return err
 }

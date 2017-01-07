@@ -16,21 +16,21 @@ var ctx = context.Background()
 func TestPlan(t *testing.T) {
 	clean(t)
 
-	err := Exec(ctx, "test/110-compile/all")
+	err := Exec(ctx, NewSemaphore(0), "test/110-compile/all")
 	assert.NoError(t, err)
 }
 
 func TestPlan_Multi(t *testing.T) {
 	clean(t)
 
-	err := Exec(ctx, "test/110-compile/all", "test/111-compile/all")
+	err := Exec(ctx, NewSemaphore(0), "test/110-compile/all", "test/111-compile/all")
 	assert.NoError(t, err)
 }
 
 func TestPlan_CyclicDependencies(t *testing.T) {
 	clean(t)
 
-	err := Exec(ctx, "test/000-cyclic/all").(*dag.MultiError)
+	err := Exec(ctx, NewSemaphore(0), "test/000-cyclic/all").(*dag.MultiError)
 	assert.Equal(t, 1, len(err.Errors))
 	assert.True(t, strings.Contains(err.Errors[0].Error(), "Cycle"))
 }
@@ -40,7 +40,7 @@ func TestPlan_Cancel(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	err := Exec(ctx, "test/000-cancel/all").(*dag.MultiError)
+	err := Exec(ctx, NewSemaphore(0), "test/000-cancel/all").(*dag.MultiError)
 	assert.Equal(t, 1, len(err.Errors))
 	assert.True(t, strings.Contains(err.Errors[0].Error(), "signal: killed"))
 }
@@ -69,6 +69,6 @@ func TestTarget_Dependencies_EmptyTarget(t *testing.T) {
 }
 
 func clean(t testing.TB) {
-	err := Exec(ctx, "test/clean")
+	err := Exec(ctx, NewSemaphore(0), "test/clean")
 	assert.NoError(t, err)
 }

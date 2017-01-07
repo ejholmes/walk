@@ -37,6 +37,11 @@ dependencies can be built.
     a file watching utility like fswatch(1) to execute a target whenever its
     dependencies have changed.
 
+  * `-j`:
+    This controls the number of concurrent targets that are executed at once. A
+    value of 0 means don't limit the number of concurrent targets. A value of 1
+    disables concurrency (serialized execution).
+
 ## TARGETS
 
 Targets can be used to represent a task, or a file that needs to be built. They

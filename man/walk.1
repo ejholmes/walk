@@ -34,6 +34,10 @@ Show stdout from rules when executing the \fBexec\fR phase\.
 \fB\-d\fR
 Print the dependencies of the target\. This can be used in conjunction with a file watching utility like fswatch(1) to execute a target whenever its dependencies have changed\.
 .
+.TP
+\fB\-j\fR
+This controls the number of concurrent targets that are executed at once\. A value of 0 means don\'t limit the number of concurrent targets\. A value of 1 disables concurrency (serialized execution)\.
+.
 .SH "TARGETS"
 Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
 .
