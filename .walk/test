@@ -6,7 +6,7 @@ deps() {
 }
 
 tests() {
-  go test ./...
+  go test -race ./...
 }
 
 case $1 in

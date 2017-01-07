@@ -1,13 +1,12 @@
 #!/bin/bash
 
 deps() {
-    echo 110-compile/all
-    echo 111-compile/all
-    echo 200-frontend/all
-    echo 300-docker/all
+  echo 110-compile/all
+  echo 111-compile/all
+  echo 200-frontend/all
+  echo 300-docker/all
 }
 
 case $1 in
   deps) deps ;;
-  exec)
 esac
