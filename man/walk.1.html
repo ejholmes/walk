@@ -112,9 +112,11 @@ dependencies can be built.</p>
 <dt class="flush"><code>-d</code></dt><dd><p>Print the dependencies of the target. This can be used in conjunction with
 a file watching utility like <span class="man-ref">fswatch<span class="s">(1)</span></span> to execute a target whenever its
 dependencies have changed.</p></dd>
-<dt class="flush"><code>-j</code></dt><dd><p>This controls the number of concurrent targets that are executed at once. A
-value of 0 means don't limit the number of concurrent targets. A value of 1
-disables concurrency (serialized execution).</p></dd>
+<dt class="flush"><code>-j</code></dt><dd><p>Controls the number of concurrent targets that are executed in parallel. A
+value of 0 (default) means don't limit the number of concurrent targets.
+Any value higher than 0 is the number of targets that will be executed in
+parallel at any given time. A value of 1 essentially means no parallelism
+(serialized execution of targets).</p></dd>
 </dl>
 
 
