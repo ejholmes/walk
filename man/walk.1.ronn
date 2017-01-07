@@ -4,7 +4,8 @@ walk(1) -- A fast, lightweight, general purpose, graph based build and task exec
 ## SYNOPSIS
 
 `walk` `--version`<br>
-`walk` [`-vd`] [target...]
+`walk` [`-v`] [target...]<br>
+`walk` [`-d`] [target]
 
 ## DESCRIPTION
 

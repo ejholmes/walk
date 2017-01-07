@@ -31,6 +31,9 @@ func main() {
 	if len(targets) == 0 {
 		targets = []string{DefaultTarget}
 	}
+	if *deps && len(targets) > 1 {
+		must(fmt.Errorf("only 1 target is allowed when using the -d flag."))
+	}
 
 	plan := newPlan()
 	plan.NewTarget = newTarget(stdout(*verbose), os.Stderr)
@@ -48,7 +51,9 @@ func main() {
 
 	must(plan.Plan(ctx, targets...))
 	if *deps {
-		for _, t := range plan.Dependencies(targets...) {
+		deps, err := plan.Dependencies(targets[0])
+		must(err)
+		for _, t := range deps {
 			fmt.Println(t.Name())
 		}
 	} else {

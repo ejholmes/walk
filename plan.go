@@ -88,8 +88,8 @@ func (p *Plan) String() string {
 }
 
 // Returns an array of all of the targets. Should be called after Plan.
-func (p *Plan) Dependencies(targets ...string) []Target {
-	return p.graph.Dependencies(targets...)
+func (p *Plan) Dependencies(target string) ([]Target, error) {
+	return p.graph.Dependencies(target)
 }
 
 // Plan builds the graph, starting with the given target. It recursively

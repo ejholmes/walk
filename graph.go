@@ -63,21 +63,16 @@ func (g *Graph) Walk(fn func(Target) error) error {
 	})
 }
 
-func (g *Graph) Dependencies(targets ...string) []Target {
-	d := make(map[string]bool)
-	for _, name := range targets {
-		g.dag.DepthFirstWalk([]dag.Vertex{name}, func(v dag.Vertex, i int) error {
-			if i > 0 {
-				d[v.(string)] = true
-			}
-			return nil
-		})
+func (g *Graph) Dependencies(target string) ([]Target, error) {
+	set, err := g.dag.Ancestors(target)
+	if err != nil {
+		return nil, err
 	}
 	var t []Target
-	for name := range d {
-		t = append(t, g.target(name))
+	for _, v := range dag.AsVertexList(set) {
+		t = append(t, g.target(v.(string)))
 	}
-	return t
+	return t, nil
 }
 
 func (g *Graph) Validate() error {
