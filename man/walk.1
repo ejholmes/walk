@@ -7,7 +7,7 @@
 \fBwalk\fR \- A fast, lightweight, general purpose, graph based build and task execution utility\.
 .
 .SH "SYNOPSIS"
-\fBwalk\fR \fB\-\-version\fR
+\fBwalk\fR \fB\-\-help\fR
 .
 .br
 \fBwalk\fR [\fB\-v\fR] [target\.\.\.]
@@ -32,7 +32,7 @@ Show stdout from rules when executing the \fBexec\fR phase\.
 .
 .TP
 \fB\-d\fR
-Print the dependencies of the target(s)\. This can be used in conjunction with a file watching utility like fswatch(1) to execute a target whenever its dependencies have changed\.
+Print the dependencies of the target\. This can be used in conjunction with a file watching utility like fswatch(1) to execute a target whenever its dependencies have changed\.
 .
 .SH "TARGETS"
 Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.

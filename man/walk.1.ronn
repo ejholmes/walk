@@ -3,7 +3,7 @@ walk(1) -- A fast, lightweight, general purpose, graph based build and task exec
 
 ## SYNOPSIS
 
-`walk` `--version`<br>
+`walk` `--help`<br>
 `walk` [`-v`] [target...]<br>
 `walk` [`-d`] [target]
 
@@ -33,9 +33,9 @@ dependencies can be built.
     Show stdout from rules when executing the **exec** phase.
 
   * `-d`:
-    Print the dependencies of the target(s). This can be used in conjunction
-    with a file watching utility like fswatch(1) to execute a target whenever
-    its dependencies have changed.
+    Print the dependencies of the target. This can be used in conjunction with
+    a file watching utility like fswatch(1) to execute a target whenever its
+    dependencies have changed.
 
 ## TARGETS
 

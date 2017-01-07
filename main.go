@@ -12,7 +12,13 @@ import (
 	"github.com/ejholmes/walk/internal/tty"
 )
 
-const DefaultTarget = "all"
+const (
+	Version = "0.0.1"
+
+	// When no target is provided on the command line, this target will be
+	// executed.
+	DefaultTarget = "all"
+)
 
 var isTTY bool
 
@@ -21,11 +27,18 @@ func init() {
 }
 
 func main() {
+	flag.Usage = usage
 	var (
+		version = flag.Bool("version", false, "Print the version of walk and exit.")
 		verbose = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
-		deps    = flag.Bool("d", false, "Print the dependencies of the target(s).")
+		deps    = flag.Bool("d", false, "Print the dependencies of the target.")
 	)
 	flag.Parse()
+
+	if *version {
+		fmt.Fprintf(os.Stderr, "%s\n", Version)
+		os.Exit(0)
+	}
 
 	targets := flag.Args()
 	if len(targets) == 0 {
@@ -98,4 +111,14 @@ func isTerminal(w io.Writer) bool {
 		return false
 	}
 	return tty.IsTerminal(f.Fd())
+}
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "walk - A fast, lightweight, general purpose, graph based build and task execution utility.\n\n")
+	fmt.Fprintf(os.Stderr, "VERSION:\n")
+	fmt.Fprintf(os.Stderr, "   %s\n\n", Version)
+	fmt.Fprintf(os.Stderr, "USAGE:\n")
+	fmt.Fprintf(os.Stderr, "   walk [target...]\n\n")
+	fmt.Fprintf(os.Stderr, "OPTIONS:\n")
+	flag.PrintDefaults()
 }
