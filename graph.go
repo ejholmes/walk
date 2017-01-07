@@ -75,6 +75,10 @@ func (g *Graph) Dependencies(target string) ([]Target, error) {
 	return t, nil
 }
 
+func (g *Graph) TransitiveReduction() {
+	g.dag.TransitiveReduction()
+}
+
 func (g *Graph) Validate() error {
 	return g.dag.Validate()
 }

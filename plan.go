@@ -93,7 +93,13 @@ func (p *Plan) Plan(ctx context.Context, targets ...string) error {
 		return err
 	}
 
-	return p.graph.Validate()
+	if err := p.graph.Validate(); err != nil {
+		return err
+	}
+
+	p.graph.TransitiveReduction()
+
+	return nil
 }
 
 // addTarget adds the given Target to the graph, as well as it's dependencies,
