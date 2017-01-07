@@ -17,10 +17,10 @@ Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https:
 
 Using Go 1.7+:
 
-```
+```console
 $ go get -u github.com/ejholmes/walk
 ```
 
 ## Usage
 
-See [`man walk(1)`](http://ejholmes.io/walk/)
+See [`man walk`](http://ejholmes.io/walk/).
