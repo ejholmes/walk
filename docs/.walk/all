@@ -1,8 +1,7 @@
 #!/bin/bash
 
 deps() {
-  echo man/all
-  echo docs/all
+  echo index.html
 }
 
 case $1 in
