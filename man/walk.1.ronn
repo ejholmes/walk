@@ -104,6 +104,12 @@ walk(1) will only look for these files in the same directory that the target is
 in. If no suitable rule is found, and the file already exists, then walk(1)
 assumes that it's a static file, and simply checks for it's existence.
 
+It's generally considered good practice to add an `all` target in each
+directory, which allows you to execute `walk` within it. For example, you may
+have a series of modules in subdirectories, each with their own `all` target,
+then the parent directory specifies all of those sub directories as
+dependencies.
+
 ## PHASES
 
 walk(1) has two phases:

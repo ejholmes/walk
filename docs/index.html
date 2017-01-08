@@ -182,6 +182,12 @@ esac
 in. If no suitable rule is found, and the file already exists, then <a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a>
 assumes that it's a static file, and simply checks for it's existence.</p>
 
+<p>It's generally considered good practice to add an <code>all</code> target in each
+directory, which allows you to execute <code>walk</code> within it. For example, you may
+have a series of modules in subdirectories, each with their own <code>all</code> target,
+then the parent directory specifies all of those sub directories as
+dependencies.</p>
+
 <h2 id="PHASES">PHASES</h2>
 
 <p><a class="man-ref" href="walk.1.html">walk<span class="s">(1)</span></a> has two phases:</p>

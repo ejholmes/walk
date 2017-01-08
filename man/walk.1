@@ -106,6 +106,9 @@ The name of the target to build (e\.g\. \fBhello\.o\fR)\.
 .P
 walk(1) will only look for these files in the same directory that the target is in\. If no suitable rule is found, and the file already exists, then walk(1) assumes that it\'s a static file, and simply checks for it\'s existence\.
 .
+.P
+It\'s generally considered good practice to add an \fBall\fR target in each directory, which allows you to execute \fBwalk\fR within it\. For example, you may have a series of modules in subdirectories, each with their own \fBall\fR target, then the parent directory specifies all of those sub directories as dependencies\.
+.
 .SH "PHASES"
 walk(1) has two phases:
 .
