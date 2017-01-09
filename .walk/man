@@ -1,8 +1,7 @@
 #!/bin/bash
 
 deps() {
-  echo man
-  echo docs/all
+  echo man/all
 }
 
 case $1 in

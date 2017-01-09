@@ -1,8 +1,10 @@
 #!/bin/bash
 
+target=$2
+
 deps() {
+  # Building walk.1 with ronn implicitly builds walk.1.html
   echo walk.1
-  echo walk.1.html
 }
 
 case $1 in
