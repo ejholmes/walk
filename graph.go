@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"sync"
 
 	"github.com/ejholmes/walk/internal/dag"
@@ -106,4 +109,16 @@ func (t *rootTarget) Exec(_ context.Context) error {
 
 func (t *rootTarget) Dependencies(_ context.Context) ([]string, error) {
 	return t.deps, nil
+}
+
+func dot(g *Graph) io.Reader {
+	b := new(bytes.Buffer)
+	io.WriteString(b, "digraph {\n")
+	for _, v := range g.dag.Vertices() {
+		for _, dep := range dag.AsVertexList(g.dag.DownEdges(v)) {
+			fmt.Fprintf(b, "  \"%s\" -> \"%s\"\n", dag.VertexName(v), dag.VertexName(dep))
+		}
+	}
+	io.WriteString(b, "}\n")
+	return b
 }

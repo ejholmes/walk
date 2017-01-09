@@ -1,0 +1,16 @@
+#!/bin/bash
+
+target=$2
+
+deps() {
+  echo graph.dot
+}
+
+build() {
+  dot -Tpng graph.dot > "$target"
+}
+
+case $1 in
+  deps) deps ;;
+  exec) build ;;
+esac

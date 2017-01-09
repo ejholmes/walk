@@ -1,0 +1,35 @@
+#!/bin/bash
+
+target=$2
+src=${2//.o/.c}
+header=${2//.o/.h}
+
+changed() {
+  local f="$1"; shift
+
+  if [[ ! -f "$f" ]]; then
+    return 0
+  elif [[ -n "$(find $@ -newer $f)" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+deps() {
+  echo "$src"
+  echo "$header"
+}
+
+compile() {
+  gcc -Wall -o $target -c $src
+}
+
+case $1 in
+  deps) deps ;;
+  exec) 
+    if changed "$target" "$(deps)"; then
+      compile
+    fi
+    ;;
+esac

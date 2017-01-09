@@ -1,0 +1,17 @@
+#!/bin/bash
+
+target=$2
+
+deps() {
+  echo main.o
+  echo parse.o
+}
+
+compile() {
+  gcc -Wall -o $target $(deps)
+}
+
+case $1 in
+  deps) deps ;;
+  exec) compile ;;
+esac

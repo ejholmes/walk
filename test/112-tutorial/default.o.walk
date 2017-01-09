@@ -1,0 +1,19 @@
+#!/bin/bash
+
+target=$2
+src=${2//.o/.c}
+header=${2//.o/.h}
+
+deps() {
+  echo "$src"
+  echo "$header"
+}
+
+compile() {
+  gcc -Wall -o $target -c $src
+}
+
+case $1 in
+  deps) deps ;;
+  exec) compile ;;
+esac

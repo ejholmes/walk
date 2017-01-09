@@ -33,6 +33,7 @@ func main() {
 		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
 		deps        = flag.Bool("d", false, "Print the dependencies of the target.")
 		concurrency = flag.Uint("j", 0, "The number of targets that are executed in parallel.")
+		print       = flag.String("p", "", "Print the graph that will be exected, then exit.")
 	)
 	flag.Parse()
 
@@ -69,6 +70,11 @@ func main() {
 		must(err)
 		for _, t := range deps {
 			fmt.Println(t.Name())
+		}
+	} else if *print != "" {
+		switch *print {
+		case "dot":
+			io.Copy(os.Stdout, dot(plan.graph))
 		}
 	} else {
 		semaphore := NewSemaphore(*concurrency)

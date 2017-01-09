@@ -1,0 +1,10 @@
+#!/bin/bash
+
+deps() {
+  echo graph.png
+  echo prog
+}
+
+case $1 in
+  deps) deps ;;
+esac
