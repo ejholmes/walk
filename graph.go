@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -111,14 +110,19 @@ func (t *rootTarget) Dependencies(_ context.Context) ([]string, error) {
 	return t.deps, nil
 }
 
-func dot(g *Graph) io.Reader {
-	b := new(bytes.Buffer)
-	io.WriteString(b, "digraph {\n")
+func dot(w io.Writer, g *Graph) error {
+	if _, err := io.WriteString(w, "digraph {\n"); err != nil {
+		return err
+	}
 	for _, v := range g.dag.Vertices() {
 		for _, dep := range dag.AsVertexList(g.dag.DownEdges(v)) {
-			fmt.Fprintf(b, "  \"%s\" -> \"%s\"\n", dag.VertexName(v), dag.VertexName(dep))
+			if _, err := fmt.Fprintf(w, "  \"%s\" -> \"%s\"\n", dag.VertexName(v), dag.VertexName(dep)); err != nil {
+				return err
+			}
 		}
 	}
-	io.WriteString(b, "}\n")
-	return b
+	if _, err := io.WriteString(w, "}\n"); err != nil {
+		return err
+	}
+	return nil
 }

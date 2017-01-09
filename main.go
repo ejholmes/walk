@@ -20,6 +20,11 @@ const (
 	DefaultTarget = "all"
 )
 
+// Maps a named format to a function that renders the graph.
+var printGraph = map[string]func(io.Writer, *Graph) error{
+	"dot": dot,
+}
+
 var isTTY bool
 
 func init() {
@@ -72,10 +77,11 @@ func main() {
 			fmt.Println(t.Name())
 		}
 	} else if *print != "" {
-		switch *print {
-		case "dot":
-			io.Copy(os.Stdout, dot(plan.graph))
+		fn, ok := printGraph[*print]
+		if !ok {
+			must(fmt.Errorf("invalid format provided: %s", *print))
 		}
+		must(fn(os.Stdout, plan.graph))
 	} else {
 		semaphore := NewSemaphore(*concurrency)
 		must(plan.Exec(ctx, semaphore))

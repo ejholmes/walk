@@ -38,6 +38,10 @@ Print the dependencies of the target\. This can be used in conjunction with a fi
 \fB\-j\fR
 Controls the number of targets that are executed in parallel\. By default, targets are executed with the maximum level of parallelism that the graph allows\. To limit the number of targets that are executed in parallel, set this to a value greater than \fB1\fR\. To execute targets serially, set this to \fB1\fR\.
 .
+.TP
+\fB\-p\fR
+Prints the underlying DAG to stdout, using the provided format\. Available formats are \fBdot\fR\.
+.
 .SH "TARGETS"
 Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
 .

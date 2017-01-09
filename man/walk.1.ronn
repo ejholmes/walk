@@ -44,6 +44,10 @@ dependencies can be built.
     this to a value greater than `1`. To execute targets serially, set this to
     `1`.
 
+  * `-p`:
+    Prints the underlying DAG to stdout, using the provided format. Available
+    formats are `dot`.
+
 ## TARGETS
 
 Targets can be used to represent a task, or a file that needs to be built. They
