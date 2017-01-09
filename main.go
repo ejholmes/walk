@@ -38,7 +38,7 @@ func main() {
 		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
 		deps        = flag.Bool("d", false, "Print the dependencies of the target.")
 		concurrency = flag.Uint("j", 0, "The number of targets that are executed in parallel.")
-		print       = flag.String("p", "", "Print the graph that will be exected, then exit.")
+		print       = flag.String("p", "", "Print the graph that will be executed and exit.")
 	)
 	flag.Parse()
 
