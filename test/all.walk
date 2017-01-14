@@ -1,6 +1,7 @@
 #!/bin/bash
 
 deps() {
+  echo bundled
   echo 110-compile/all
   echo 111-compile/all
   echo 200-frontend/all

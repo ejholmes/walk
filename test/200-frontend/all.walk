@@ -1,11 +1,10 @@
 #!/bin/bash
 
 deps() {
-    echo application.css
-    echo test
+  echo application.css
+  echo test
 }
 
 case $1 in
   deps) deps ;;
-  exec)
 esac

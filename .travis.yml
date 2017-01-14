@@ -1,6 +1,12 @@
+sudo: required
+
 language: go
+
+services:
+  - docker
 
 go:
   - 1.7
 
-script: go test -v -race ./...
+install: go install .
+script: walk -v test
