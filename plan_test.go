@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -46,7 +47,10 @@ func TestPlan_Cancel(t *testing.T) {
 }
 
 func TestTarget_Dependencies(t *testing.T) {
-	target, err := newTarget("test/110-compile/all")
+	wd, err := os.Getwd()
+	assert.NoError(t, err)
+
+	target, err := newTarget(wd, "test/110-compile/all")
 	assert.NoError(t, err)
 
 	deps, err := target.Dependencies(ctx)
@@ -60,12 +64,36 @@ func TestTarget_Dependencies(t *testing.T) {
 }
 
 func TestTarget_Dependencies_EmptyTarget(t *testing.T) {
-	target, err := newTarget("test/000-empty-dependency/all")
+	wd, err := os.Getwd()
+	assert.NoError(t, err)
+
+	target, err := newTarget(wd, "test/000-empty-dependency/all")
 	assert.NoError(t, err)
 
 	deps, err := target.Dependencies(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"test/000-empty-dependency/a", "test/000-empty-dependency/b"}, deps)
+}
+
+func TestRuleFile(t *testing.T) {
+	wd, err := os.Getwd()
+	assert.NoError(t, err)
+
+	path, err := RuleFile(abs(wd, "test/110-compile/hello.o"))
+	assert.NoError(t, err)
+	assert.Equal(t, abs(wd, "test/110-compile/hello.o.walk"), path)
+
+	path, err = RuleFile("test/111-compile/hello.o")
+	assert.NoError(t, err)
+	assert.Equal(t, "test/111-compile/default.o.walk", path)
+
+	path, err = RuleFile("test")
+	assert.NoError(t, err)
+	assert.Equal(t, ".walk/test", path)
+
+	path, err = RuleFile("foo")
+	assert.NoError(t, err)
+	assert.Equal(t, "", path)
 }
 
 func clean(t testing.TB) {

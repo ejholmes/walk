@@ -47,6 +47,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	// All targets are relative to the current working directory.
+	wd, err := os.Getwd()
+	must(err)
+
 	targets := flag.Args()
 	if len(targets) == 0 {
 		targets = []string{DefaultTarget}
@@ -56,7 +60,7 @@ func main() {
 	}
 
 	plan := newPlan()
-	plan.NewTarget = newVerboseTarget(stdout(*verbose), os.Stderr)
+	plan.NewTarget = newVerboseTarget(wd, stdout(*verbose), os.Stderr)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -88,9 +92,9 @@ func main() {
 	}
 }
 
-func newVerboseTarget(stdout, stderr io.Writer) func(string) (Target, error) {
+func newVerboseTarget(wd string, stdout, stderr io.Writer) func(string) (Target, error) {
 	return func(name string) (Target, error) {
-		t, err := newTarget(name)
+		t, err := newTarget(wd, name)
 		if err != nil {
 			return nil, err
 		}
