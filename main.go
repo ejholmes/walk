@@ -94,10 +94,7 @@ func main() {
 
 func newVerboseTarget(wd string, stdout, stderr io.Writer) func(string) (Target, error) {
 	return func(name string) (Target, error) {
-		t, err := newTarget(wd, name)
-		if err != nil {
-			return nil, err
-		}
+		t := newTarget(wd, name)
 		t.stdout = stdout
 		t.stderr = stderr
 		vt := &verboseTarget{

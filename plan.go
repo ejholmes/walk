@@ -203,13 +203,10 @@ type target struct {
 }
 
 // newTarget initializes and returns a new target instance.
-func newTarget(wd, name string) (*target, error) {
+func newTarget(wd, name string) *target {
 	path := abs(wd, name)
 
-	rulefile, err := RuleFile(path)
-	if err != nil {
-		return nil, err
-	}
+	rulefile := RuleFile(path)
 
 	var dir string
 	if rulefile != "" {
@@ -222,7 +219,7 @@ func newTarget(wd, name string) (*target, error) {
 		rulefile: rulefile,
 		dir:      dir,
 		wd:       wd,
-	}, nil
+	}
 }
 
 // Name implements the Target interface.
@@ -315,7 +312,7 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 //	hello.o.walk
 //	.walk/default.o
 //	default.o.walk
-func RuleFile(path string) (string, error) {
+func RuleFile(path string) string {
 	dir := filepath.Dir(path)
 	name := filepath.Base(path)
 	ext := filepath.Ext(name)
@@ -330,11 +327,11 @@ func RuleFile(path string) (string, error) {
 		path := filepath.Join(dir, n)
 		_, err := os.Stat(path)
 		if err == nil {
-			return path, nil
+			return path
 		}
 	}
 
-	return "", nil
+	return ""
 }
 
 func abs(wd, path string) string {

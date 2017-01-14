@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,8 +51,7 @@ func TestTarget_Dependencies(t *testing.T) {
 	wd, err := os.Getwd()
 	assert.NoError(t, err)
 
-	target, err := newTarget(wd, "test/110-compile/all")
-	assert.NoError(t, err)
+	target := newTarget(wd, "test/110-compile/all")
 
 	deps, err := target.Dependencies(ctx)
 	assert.NoError(t, err)
@@ -67,8 +67,7 @@ func TestTarget_Dependencies_EmptyTarget(t *testing.T) {
 	wd, err := os.Getwd()
 	assert.NoError(t, err)
 
-	target, err := newTarget(wd, "test/000-empty-dependency/all")
-	assert.NoError(t, err)
+	target := newTarget(wd, "test/000-empty-dependency/all")
 
 	deps, err := target.Dependencies(ctx)
 	assert.NoError(t, err)
@@ -79,21 +78,21 @@ func TestRuleFile(t *testing.T) {
 	wd, err := os.Getwd()
 	assert.NoError(t, err)
 
-	path, err := RuleFile(abs(wd, "test/110-compile/hello.o"))
-	assert.NoError(t, err)
-	assert.Equal(t, abs(wd, "test/110-compile/hello.o.walk"), path)
+	tests := []struct {
+		target string
+		rule   string
+	}{
+		{abs(wd, "test/110-compile/hello.o"), abs(wd, "test/110-compile/hello.o.walk")},
+		{"test/111-compile/hello.o", "test/111-compile/default.o.walk"},
+		{"test", ".walk/test"},
+		{"foo", ""},
+	}
 
-	path, err = RuleFile("test/111-compile/hello.o")
-	assert.NoError(t, err)
-	assert.Equal(t, "test/111-compile/default.o.walk", path)
-
-	path, err = RuleFile("test")
-	assert.NoError(t, err)
-	assert.Equal(t, ".walk/test", path)
-
-	path, err = RuleFile("foo")
-	assert.NoError(t, err)
-	assert.Equal(t, "", path)
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%d: %s", i, tt.target), func(t *testing.T) {
+			assert.Equal(t, tt.rule, RuleFile(tt.target))
+		})
+	}
 }
 
 func clean(t testing.TB) {
