@@ -145,9 +145,8 @@ func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 func (p *Plan) Exec(ctx context.Context, semaphore Semaphore) error {
 	err := p.graph.Walk(func(t Target) error {
 		semaphore.P()
-		err := t.Exec(ctx)
-		semaphore.V()
-		return err
+		defer semaphore.V()
+		return t.Exec(ctx)
 	})
 	return err
 }
