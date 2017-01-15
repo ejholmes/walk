@@ -282,7 +282,7 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 func (t *target) ruleCommand(ctx context.Context, phase string) *exec.Cmd {
 	name := filepath.Base(t.path)
 	cmd := exec.CommandContext(ctx, t.rulefile, phase, name)
-	pre := ansi("36", fmt.Sprintf("%s ", t.name))
+	pre := ansi("36", fmt.Sprintf("%s\t", t.name))
 	cmd.Stdout = prefix(t.stdout, pre)
 	cmd.Stderr = prefix(t.stderr, pre)
 	cmd.Dir = t.dir
