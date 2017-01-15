@@ -10,13 +10,13 @@ There are multiple test suites that are exercised. The full suite requires that 
 
 ```console
 $ go install .
-$ walk clean && walk test
+$ walk clean && walk test/unit && walk test/integration
 ```
 
 The Go specific tests can be ran with:
 
 ```console
-go test .
+go test ./...
 ```
 
 ## Releasing
