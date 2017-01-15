@@ -1,5 +1,7 @@
 #!/bin/bash
 
+target=$1
+
 deps() {
   find .. -type f -iname '*.go'
 }
