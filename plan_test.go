@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -103,6 +105,55 @@ func TestRuleFile(t *testing.T) {
 			assert.Equal(t, tt.rule, RuleFile(tt.target))
 		})
 	}
+}
+
+func TestPrefixWriter(t *testing.T) {
+	b := new(bytes.Buffer)
+	w := &prefixWriter{w: b, prefix: []byte("prefix: ")}
+
+	// Lines are buffered until a newline.
+	w.Write([]byte("foo\n"))
+	assert.Equal(t, "prefix: foo\n", b.String())
+
+	// When a newline appears, line is prefixed and flushed.
+	w.Write([]byte("bar"))
+	assert.Equal(t, "prefix: foo\n", b.String())
+	w.Write([]byte("\n"))
+	assert.Equal(t, "prefix: foo\nprefix: bar\n", b.String())
+
+	b.Reset()
+	w.b = nil
+	io.Copy(w, strings.NewReader(`I stand and listen, head bowed, 
+to my inner complaint. 
+Persons passing by think 
+I am searching for a lost coin. 
+You’re fired, I yell inside 
+after an especially bad episode. 
+I’m letting you go without notice 
+or terminal pay. You just lost 
+another chance to make good. 
+But then I watch myself standing at the exit, 
+depressed and about to leave, 
+and wave myself back in wearily, 
+for who else could I get in my place 
+to do the job in dark, airless conditions?
+`))
+
+	assert.Equal(t, `prefix: I stand and listen, head bowed, 
+prefix: to my inner complaint. 
+prefix: Persons passing by think 
+prefix: I am searching for a lost coin. 
+prefix: You’re fired, I yell inside 
+prefix: after an especially bad episode. 
+prefix: I’m letting you go without notice 
+prefix: or terminal pay. You just lost 
+prefix: another chance to make good. 
+prefix: But then I watch myself standing at the exit, 
+prefix: depressed and about to leave, 
+prefix: and wave myself back in wearily, 
+prefix: for who else could I get in my place 
+prefix: to do the job in dark, airless conditions?
+`, b.String())
 }
 
 func clean(t testing.TB) {
