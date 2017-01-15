@@ -129,7 +129,7 @@ func isTerminal(w io.Writer) bool {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "walk - A fast, lightweight, general purpose, graph based build and task execution utility.\n\n")
+	fmt.Fprintf(os.Stderr, "walk - A fast, general purpose, graph based build and task execution utility.\n\n")
 	fmt.Fprintf(os.Stderr, "VERSION:\n")
 	fmt.Fprintf(os.Stderr, "   %s\n\n", Version)
 	fmt.Fprintf(os.Stderr, "USAGE:\n")

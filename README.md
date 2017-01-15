@@ -1,6 +1,6 @@
 # [Walk](http://ejholmes.io/walk/) [![Build Status](https://travis-ci.org/ejholmes/walk.svg?branch=master)](https://travis-ci.org/ejholmes/walk)
 
-walk(1) is a fast, lightweight, general purpose, graph based build and task execution utility.
+walk(1) is a fast, general purpose, graph based build and task execution utility.
 
 Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https://github.com/apenwarr/redo).
 
