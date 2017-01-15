@@ -24,5 +24,7 @@ go test .
 Bump the version number in [VERSION](./VERSION), then run:
 
 ```console
-walk -v release
+$ walk -v version.go
+$ git commit -m "Bump version"
+$ walk -v release
 ```
