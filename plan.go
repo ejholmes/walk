@@ -157,10 +157,18 @@ func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 // Rule. Targets Exec functions are gauranteed to be called when all of the
 // Targets dependencies have been fulfilled.
 func (p *Plan) Exec(ctx context.Context, semaphore Semaphore) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	return p.graph.Walk(func(t Target) error {
 		semaphore.P()
 		defer semaphore.V()
-		return t.Exec(ctx)
+		err := t.Exec(ctx)
+		if err != nil {
+			// Cancel all other currently executing targets.
+			cancel()
+		}
+		return err
 	})
 }
 

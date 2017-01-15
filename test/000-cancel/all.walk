@@ -1,5 +1,10 @@
 #!/bin/bash
 
+deps() {
+  echo a.sleep
+  echo b.sleep
+}
+
 case $1 in
-  exec) exec sleep 60 ;;
+  deps) deps ;;
 esac
