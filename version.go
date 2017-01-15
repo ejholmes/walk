@@ -2,4 +2,4 @@
 // Auto generated from by 'walk version.go'
 package main
 
-const Version = "0.0.1"
+const Version = "0.2.0"
