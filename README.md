@@ -21,6 +21,8 @@ Using Go 1.7+:
 $ go get -u github.com/ejholmes/walk
 ```
 
+Or grab the latest release from https://github.com/ejholmes/walk/releases.
+
 ## Usage
 
 See [`man walk`](http://ejholmes.io/walk/).
