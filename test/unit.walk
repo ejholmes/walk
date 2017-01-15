@@ -1,11 +1,11 @@
 #!/bin/bash
 
 deps() {
-  echo test/all
+  find .. -type f -iname '*.go'
 }
 
 tests() {
-  go test -race ./...
+  go test -race ../...
 }
 
 case $1 in

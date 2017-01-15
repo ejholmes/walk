@@ -3,8 +3,7 @@
 target=$2
 
 deps() {
-  find . -type f -iname '*.go'
-  echo ../version.go
+  find .. -type f -iname '*.go'
 }
 
 build() {
