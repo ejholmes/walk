@@ -119,6 +119,10 @@ this to a value greater than <code>1</code>. To execute targets serially, set th
 <code>1</code>.</p></dd>
 <dt class="flush"><code>-p</code></dt><dd><p>Prints the underlying DAG to stdout, using the provided format. Available
 formats are <code>dot</code>.</p></dd>
+<dt><code>--noprefix</code></dt><dd><p>By default, the stdout/stderr output from rules is prefixed with the name
+of the target, followed by a tab character. This flag disables the
+prefixing. This can help with performance, or issues where you encounter
+"too many open files", since prefixing necessitates more file descriptors.</p></dd>
 </dl>
 
 

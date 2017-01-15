@@ -34,6 +34,7 @@ func main() {
 	var (
 		version     = flag.Bool("version", false, "Print the version of walk and exit.")
 		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
+		noprefix    = flag.Bool("noprefix", false, "Disables the prefixing of stdout/stderr from rules with the name of the target.")
 		deps        = flag.Bool("d", false, "Print the dependencies of the target.")
 		concurrency = flag.Uint("j", 0, "The number of targets that are executed in parallel.")
 		print       = flag.String("p", "", "Print the graph that will be executed and exit.")
@@ -45,10 +46,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	// All targets are relative to the current working directory.
-	wd, err := os.Getwd()
-	must(err)
-
 	targets := flag.Args()
 	if len(targets) == 0 {
 		targets = []string{DefaultTarget}
@@ -58,7 +55,10 @@ func main() {
 	}
 
 	plan := newPlan()
-	plan.NewTarget = newVerboseTarget(wd, stdout(*verbose), os.Stderr)
+	plan.NewTarget = NewTarget(TargetOptions{
+		Verbose:  *verbose,
+		NoPrefix: *noprefix,
+	})
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -90,31 +90,13 @@ func main() {
 	}
 }
 
-func newVerboseTarget(wd string, stdout, stderr io.Writer) func(string) (Target, error) {
-	return func(name string) (Target, error) {
-		t := newTarget(wd, name)
-		t.stdout = stdout
-		t.stderr = stderr
-		vt := &verboseTarget{
-			target: t,
-		}
-		return vt, nil
-	}
-}
-
-func stdout(verbose bool) io.Writer {
-	if verbose {
-		return os.Stdout
-	}
-	return nil
-}
-
 func must(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", ansi("31", "error: %v", err))
 		os.Exit(1)
 	}
 }
+
 func isTerminal(w io.Writer) bool {
 	if w == nil {
 		return false

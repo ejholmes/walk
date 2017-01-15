@@ -38,13 +38,60 @@ type Target interface {
 	Name() string
 }
 
+// TargetOptions are options passed to the NewTarget factory method.
+type TargetOptions struct {
+	// The working directory that the target is relative to. The zero value
+	// is to use os.Getwd().
+	WorkingDir string
+
+	// Stdout/Stderr streams.
+	Stdout, Stderr io.Writer
+
+	// If true, the stdout from the targets will be attached to the Stdout
+	// provided above.
+	Verbose bool
+
+	// If true, disables prefixing of stdout/stderr
+	NoPrefix bool
+}
+
 // NewTarget returns a new Target instance.
-func NewTarget(name string) (Target, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
+func NewTarget(options TargetOptions) func(string) (Target, error) {
+	if options.Stdout == nil {
+		options.Stdout = os.Stdout
 	}
-	return newVerboseTarget(wd, nil, os.Stderr)(name)
+
+	if options.Stderr == nil {
+		options.Stderr = os.Stderr
+	}
+
+	var err error
+	if options.WorkingDir == "" {
+		options.WorkingDir, err = os.Getwd()
+	}
+
+	return func(name string) (Target, error) {
+		if err != nil {
+			return nil, err
+		}
+
+		t := newTarget(options.WorkingDir, name)
+		if options.Verbose {
+			if options.NoPrefix {
+				t.stdout = options.Stdout
+			} else {
+				t.stdout = prefix(options.Stdout, t)
+			}
+		}
+		if options.NoPrefix {
+			t.stderr = options.Stderr
+		} else {
+			t.stderr = prefix(options.Stderr, t)
+		}
+		return &verboseTarget{
+			target: t,
+		}, nil
+	}
 }
 
 // Plan is used to build a graph of all the targets and their dependencies. It
@@ -72,7 +119,7 @@ func Exec(ctx context.Context, semaphore Semaphore, targets ...string) error {
 // newPlan returns a new initialized Plan instance.
 func newPlan() *Plan {
 	return &Plan{
-		NewTarget: NewTarget,
+		NewTarget: NewTarget(TargetOptions{}),
 		graph:     newGraph(),
 	}
 }
@@ -294,9 +341,8 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 func (t *target) ruleCommand(ctx context.Context, phase string) *exec.Cmd {
 	name := filepath.Base(t.path)
 	cmd := exec.CommandContext(ctx, t.rulefile, phase, name)
-	pre := ansi("36", fmt.Sprintf("%s\t", t.name))
-	cmd.Stdout = prefix(t.stdout, pre)
-	cmd.Stderr = prefix(t.stderr, pre)
+	cmd.Stdout = t.stdout
+	cmd.Stderr = t.stderr
 	cmd.Dir = t.dir
 	return cmd
 }
@@ -365,10 +411,11 @@ type prefixWriter struct {
 	b []byte
 }
 
-func prefix(w io.Writer, prefix string) io.Writer {
+func prefix(w io.Writer, t Target) io.Writer {
 	if w == nil {
 		return w
 	}
+	prefix := ansi("36", fmt.Sprintf("%s\t", t.Name()))
 	return &prefixWriter{
 		prefix: []byte(prefix),
 		w:      w,

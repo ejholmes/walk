@@ -42,6 +42,10 @@ Controls the number of targets that are executed in parallel\. By default, targe
 \fB\-p\fR
 Prints the underlying DAG to stdout, using the provided format\. Available formats are \fBdot\fR\.
 .
+.TP
+\fB\-\-noprefix\fR
+By default, the stdout/stderr output from rules is prefixed with the name of the target, followed by a tab character\. This flag disables the prefixing\. This can help with performance, or issues where you encounter "too many open files", since prefixing necessitates more file descriptors\.
+.
 .SH "TARGETS"
 Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
 .

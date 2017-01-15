@@ -48,6 +48,12 @@ dependencies can be built.
     Prints the underlying DAG to stdout, using the provided format. Available
     formats are `dot`.
 
+  * `--noprefix`:
+    By default, the stdout/stderr output from rules is prefixed with the name
+    of the target, followed by a tab character. This flag disables the
+    prefixing. This can help with performance, or issues where you encounter
+    "too many open files", since prefixing necessitates more file descriptors.
+
 ## TARGETS
 
 Targets can be used to represent a task, or a file that needs to be built. They
