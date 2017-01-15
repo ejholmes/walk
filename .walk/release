@@ -1,0 +1,45 @@
+#!/bin/bash
+
+set -eo pipefail
+
+user=ejholmes
+repo=walk
+
+gh() {
+  github-release $@
+}
+
+binaries() {
+  echo bin/walk-darwin
+  echo bin/walk-linux
+}
+
+deps() {
+  echo VERSION
+  binaries
+}
+
+release() {
+  local tag=v$(cat VERSION)
+
+  git tag ${tag} && git push --tags
+
+  gh release \
+    --user ${user} \
+    --repo ${repo} \
+    --tag ${tag}
+
+  for f in $(binaries); do
+    gh upload \
+      --user ${user} \
+      --repo ${repo} \
+      --tag ${tag} \
+      --name $(basename $f) \
+      --file $f
+  done
+}
+
+case $1 in
+  deps) deps ;;
+  exec) release ;;
+esac

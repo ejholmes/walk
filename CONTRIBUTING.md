@@ -18,3 +18,11 @@ The Go specific tests can be ran with:
 ```console
 go test .
 ```
+
+## Releasing
+
+Bump the version number in [VERSION](./VERSION), then run:
+
+```console
+walk -v release
+```

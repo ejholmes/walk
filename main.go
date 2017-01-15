@@ -13,8 +13,6 @@ import (
 )
 
 const (
-	Version = "0.0.1"
-
 	// When no target is provided on the command line, this target will be
 	// executed.
 	DefaultTarget = "all"
