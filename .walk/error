@@ -1,0 +1,9 @@
+#!/bin/bash
+
+deps() {
+  echo test/000-cancel/fail
+}
+
+case $1 in
+  deps) deps ;;
+esac

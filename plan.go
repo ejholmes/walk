@@ -180,9 +180,13 @@ type targetError struct {
 }
 
 func (e *targetError) Error() string {
-	prefix := fmt.Sprintf("error performing %s", e.target.Name())
+	prefix := e.target.Name()
 	if e.target.rulefile != "" {
-		prefix += fmt.Sprintf(" (using %s)", e.target.rulefile)
+		path := e.target.rulefile
+		if p, err := filepath.Rel(e.target.wd, path); err == nil {
+			path = p
+		}
+		prefix += fmt.Sprintf(" (executing %s)", path)
 	}
 	return fmt.Sprintf("%s: %v", prefix, e.err)
 }
