@@ -12,6 +12,7 @@ Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https:
 * Graph based dependency management.
 * Maximum composability with existing UNIX tooling.
 * Describe targets and their dependencies as simple executables.
+* Universal execution; execute `walk` from any directory.
 
 ## Installation
 
