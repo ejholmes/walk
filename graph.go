@@ -11,6 +11,7 @@ import (
 
 // WalkError is returned when a target fails while walking the graph.
 type WalkError struct {
+	mu     sync.Mutex
 	Errors map[string]error
 }
 
@@ -20,6 +21,15 @@ func newWalkError() *WalkError {
 
 func (e *WalkError) Error() string {
 	return fmt.Sprintf("%d targets failed", len(e.Errors))
+}
+
+func (e *WalkError) Add(t Target, err error) {
+	if err == nil {
+		return
+	}
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.Errors[t.Name()] = err
 }
 
 // Graph wraps a graph of targets.
@@ -67,7 +77,6 @@ func (g *Graph) Target(name string) Target {
 
 // Walk wraps the underlying Walk function to coerce it to a Target first.
 func (g *Graph) Walk(fn func(Target) error) error {
-	var mu sync.Mutex
 	errors := newWalkError()
 	err := g.dag.Walk(func(v dag.Vertex) error {
 		target := g.Target(v.(string))
@@ -77,11 +86,7 @@ func (g *Graph) Walk(fn func(Target) error) error {
 			return nil
 		}
 		err := fn(target)
-		if err != nil {
-			mu.Lock()
-			errors.Errors[target.Name()] = err
-			mu.Unlock()
-		}
+		errors.Add(target, err)
 		return err
 	})
 
