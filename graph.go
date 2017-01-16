@@ -20,7 +20,7 @@ func newWalkError() *WalkError {
 }
 
 func (e *WalkError) Error() string {
-	return fmt.Sprintf("%d targets failed", len(e.Errors))
+	return fmt.Sprintf("%d %s failed", len(e.Errors), pluralize(len(e.Errors), "target", "targets"))
 }
 
 func (e *WalkError) Add(t Target, err error) {

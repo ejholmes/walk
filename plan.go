@@ -391,13 +391,6 @@ func RuleFile(path string) string {
 	return ""
 }
 
-func abs(wd, path string) string {
-	if !filepath.IsAbs(path) {
-		path = filepath.Join(wd, path)
-	}
-	return filepath.Clean(path)
-}
-
 // prefixWriter wraps an io.Writer to append a prefix to each line written.
 type prefixWriter struct {
 	prefix []byte
