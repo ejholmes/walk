@@ -7,7 +7,7 @@ deps() {
 }
 
 build() {
-  go build -o $target ..
+  exec go build -o $target ..
 }
 
 case $1 in
