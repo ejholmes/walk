@@ -204,18 +204,10 @@ func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 // Rule. Targets Exec functions are gauranteed to be called when all of the
 // Targets dependencies have been fulfilled.
 func (p *Plan) Exec(ctx context.Context, semaphore Semaphore) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	return p.graph.Walk(func(t Target) error {
 		semaphore.P()
 		defer semaphore.V()
-		err := t.Exec(ctx)
-		if err != nil {
-			// Cancel all other currently executing targets.
-			cancel()
-		}
-		return err
+		return t.Exec(ctx)
 	})
 }
 
@@ -354,11 +346,17 @@ type verboseTarget struct {
 
 func (t *verboseTarget) Exec(ctx context.Context) error {
 	err := t.target.Exec(ctx)
+	if t.rulefile != "" {
+		prefix := "ok"
+		color := "32"
+		if err != nil {
+			prefix = "error"
+			color = "31"
+		}
+		fmt.Printf("%s\t%s\n", ansi(color, "%s", prefix), t.target.Name())
+	}
 	if err != nil {
 		return &targetError{t.target, err}
-	}
-	if err == nil && t.rulefile != "" {
-		fmt.Printf("%s\n", ansi("32", "%s", t.Name()))
 	}
 	return err
 }

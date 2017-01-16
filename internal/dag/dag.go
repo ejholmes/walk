@@ -1,6 +1,7 @@
 package dag
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -154,6 +155,9 @@ func (g *AcyclicGraph) Cycles() [][]Vertex {
 	return cycles
 }
 
+// ErrWalk is returned by Walk when WalkFunc returns an error.
+var ErrWalk = errors.New("dag: error walking graph")
+
 // Walk walks the graph, calling your callback as each node is visited.
 // This will walk nodes in parallel if it can. Because the walk is done
 // in parallel, the error returned will be a multierror.
@@ -178,7 +182,7 @@ func (g *AcyclicGraph) Walk(cb WalkFunc) error {
 
 	// The map of whether a vertex errored or not during the walk
 	var errLock sync.Mutex
-	var errs error
+	var errored bool
 	errMap := make(map[Vertex]bool)
 	for _, v := range vertices {
 		// Build our list of dependencies and the list of channels to
@@ -235,13 +239,16 @@ func (g *AcyclicGraph) Walk(cb WalkFunc) error {
 			defer errLock.Unlock()
 			if err != nil {
 				errMap[v] = true
-				errs = appendErrors(errs, err)
+				errored = true
 			}
 		}(v, ourCh, readyCh)
 	}
 
 	<-doneCh
-	return errs
+	if errored {
+		return ErrWalk
+	}
+	return nil
 }
 
 // simple convenience helper for converting a dag.Set to a []Vertex

@@ -44,19 +44,10 @@ func TestPlan_Cancel(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	err := Exec(ctx, NewSemaphore(0), "test/000-cancel/all").(*dag.MultiError)
+	err := Exec(ctx, NewSemaphore(0), "test/000-cancel/all").(*WalkError)
 	assert.Equal(t, 2, len(err.Errors))
-	assert.True(t, strings.Contains(err.Errors[0].Error(), "signal: killed"))
-}
-
-func TestPlan_Cancel_Fail(t *testing.T) {
-	clean(t)
-
-	err := Exec(ctx, NewSemaphore(0), "test/000-cancel/all", "test/000-cancel/fail").(*dag.MultiError)
-	assert.Equal(t, 3, len(err.Errors))
-	assert.True(t, strings.Contains(err.Errors[0].Error(), "exit status 1"))
-	assert.True(t, strings.Contains(err.Errors[1].Error(), "signal: killed"))
-	assert.True(t, strings.Contains(err.Errors[2].Error(), "signal: killed"))
+	assert.True(t, strings.Contains(err.Errors["test/000-cancel/b.sleep"].Error(), "signal: killed"))
+	assert.True(t, strings.Contains(err.Errors["test/000-cancel/a.sleep"].Error(), "signal: killed"))
 }
 
 func TestTarget_Dependencies(t *testing.T) {

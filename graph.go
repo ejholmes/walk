@@ -9,6 +9,19 @@ import (
 	"github.com/ejholmes/walk/internal/dag"
 )
 
+// WalkError is returned when a target fails while walking the graph.
+type WalkError struct {
+	Errors map[string]error
+}
+
+func newWalkError() *WalkError {
+	return &WalkError{Errors: make(map[string]error)}
+}
+
+func (e *WalkError) Error() string {
+	return fmt.Sprintf("%d targets failed", len(e.Errors))
+}
+
 // Graph wraps a graph of targets.
 type Graph struct {
 	mu  sync.Mutex
@@ -54,15 +67,29 @@ func (g *Graph) Target(name string) Target {
 
 // Walk wraps the underlying Walk function to coerce it to a Target first.
 func (g *Graph) Walk(fn func(Target) error) error {
-	return g.dag.Walk(func(v dag.Vertex) error {
+	var mu sync.Mutex
+	errors := newWalkError()
+	err := g.dag.Walk(func(v dag.Vertex) error {
 		target := g.Target(v.(string))
 		// We don't actually need to walk the root, since it's a psuedo
 		// target.
 		if _, ok := target.(*rootTarget); ok {
 			return nil
 		}
-		return fn(target)
+		err := fn(target)
+		if err != nil {
+			mu.Lock()
+			errors.Errors[target.Name()] = err
+			mu.Unlock()
+		}
+		return err
 	})
+
+	if err == dag.ErrWalk {
+		return errors
+	}
+
+	return err
 }
 
 func (g *Graph) Dependencies(target string) ([]Target, error) {

@@ -1,5 +1,5 @@
 #!/bin/bash
 
 case $1 in
-  exec) exit 1 ;;
+  exec) >&2 echo "Boom" && exit 1 ;;
 esac
