@@ -30,7 +30,7 @@ dependencies can be built.
 ## OPTIONS
 
   * `-v`:
-    Show stdout from rules when executing the **exec** phase.
+    Show stdout from the `Walkfile` when executing the **exec** phase.
 
   * `-d`:
     Print the dependencies of the target. This can be used in conjunction with
@@ -49,7 +49,7 @@ dependencies can be built.
     formats are `dot`.
 
   * `--noprefix`:
-    By default, the stdout/stderr output from rules is prefixed with the name
+    By default, the stdout/stderr output from the `Walkfile` is prefixed with the name
     of the target, followed by a tab character. This flag disables the
     prefixing. This can help with performance, or issues where you encounter
     "too many open files", since prefixing necessitates more file descriptors.
@@ -62,47 +62,18 @@ to files that need to be built, like `src/hello.o`. When a target does not
 relate to an actual file on disk, it's synonymous with `.PHONY` targets in
 make(1).
 
-walk(1) will look for a "rule" file to determine if it has dependencies, or
-needs to be built. Rules are described below.
+walk(1) delegates to an executable file called [Walkfile][WALKFILE] within the same
+directory as the target, to determine what dependencies the target has, and how
+to execute it.
 
-## RULES
+## WALKFILE
 
-Rules determine _how_ a target is executed, and what other targets it depends
-on. Rules are defined as executable files.
+The `Walkfile` determines _how_ a target is executed, and what other targets it
+depends on.
 
-When walk(1) begins execution of a target, it first attempts to find a
-compatible rule for the target by looking at executable files ending in `.walk`
-or any files inside a `.walk` directory. As an example, say we wanted to build
-`hello.o` by executing `walk hello.o`. walk(1) will attempt, in order, the
-following files:
-
-    .walk/hello.o
-    hello.o.walk
-    .walk/default.o
-    default.o.walk
-
-As an example, a simple rule file for building `.o` files from `.c` files,
-could be named `default.o.walk` and might look like this:
-
-    #!/bin/bash
-    
-    target=$2
-    src=${2//.o/.c}
-    
-    deps() {
-      echo $src
-    }
-    
-    compile() {
-      gcc -Wall -o $target -c $src
-    }
-    
-    case $1 in
-      deps) deps ;;
-      exec) compile ;;
-    esac
-
-When walk executes a rule, it executes it with the following positional arguments:
+When walk(1) begins execution of a target, it attempts to find an executable
+file called `Walkfile` in the same directory as the target, and then executes
+it with the following positional arguments:
 
   * `$1`:
     The [phase][PHASES] (`deps` or `exec`).
@@ -110,33 +81,30 @@ When walk executes a rule, it executes it with the following positional argument
   * `$2`:
     The name of the target to build (e.g. `hello.o`).
 
-walk(1) will only look for these files in the same directory that the target is
-in. If no suitable rule is found, and the file already exists, then walk(1)
-assumes that it's a static file, and simply checks for it's existence.
+It's up to the `Walkfile` to determine what dependencies the target has, and
+how to execute it. In general, it's good practice to make the Walkfile delegate
+to some named executables in a `.walk` directory, like this:
 
-It's generally considered good practice to add an `all` target in each
-directory, which allows you to execute `walk` within it. For example, you may
-have a series of modules in subdirectories, each with their own `all` target,
-then the parent directory specifies all of those sub directories as
-dependencies.
+    #!/bin/bash
+
+    case $2 in
+      all|test|clean) exec ./.walk/$2 $@ ;;
+    end
 
 ## PHASES
 
 walk(1) has two phases:
 
   * `Plan`:
-    In this phase, walk(1) executes all the rules with `deps` as the first
-    argument. Rules are expected to print a newline delimited list of files
-    that the target depends on, relative to the target. Internally, walk(1)
-    builds a graph of all of the targets and their dependencies.
+    In this phase, walk(1) executes the `Walkfile` with `deps` as the first
+    argument. The `Walkfile` is expected to print a newline delimited list of
+    files that the target depends on, relative to the target. Internally,
+    walk(1) builds a graph of all of the targets and their dependencies.
 
   * `Exec`:
-    In this phase, walk(1) executes all of the rules files with `exec` as the
-    first argument. Rules are expected to build the given target, but don't
+    In this phase, walk(1) executes the `Walkfile` with `exec` as the first
+    argument. The `Walkfile` is expected to build the given target, but don't
     need to if it's, for example, a task (like `test`, `clean`, etc).
-
-By separating these phases, walk(1) can build a compact dependency graph, and
-perform fast parallel builds.
 
 ## COMPARISONS
 
@@ -182,29 +150,51 @@ For the following examples, we'll assume that we want to build a program called
 
 When `walk` is invoked without any arguments, it defaults to a target called `all`:
 
-    walk
+    $ walk
+
+Here's what happens within walk(1) when we execute this:
+
+1. walk(1) resolves all of the dependencies, and builds a graph:
+
+        $ Walkfile deps all
+        hello
+        $ Walkfile deps hello
+        hello.o
+        $ Walkfile deps hello.o
+        hello.c
+        hello.h
+        $ Walkfile deps hello.c
+        $ Walkfile deps hello.h
+
+2. walk(1) executes all of the targets, starting with dependencies:
+
+        $ Walkfile exec hello.c
+        $ Walkfile exec hello.h
+        $ Walkfile exec hello.o
+        $ Walkfile exec hello
+        $ Walkfile exec all
 
 You can provide one or more targets as arguments to specify where to start
 execution from. For example, if wanted to build just `hello.o` and any of it's
 dependencies:
 
-    walk hello.o
+    $ walk hello.o
 
-When rules are executed, they're always executed relative to the basename of
+When targets are executed, they're always executed relative to the directory of
 the target. This means that we can execute `walk` from any directory, and
 always get the same behavior. All of the following are identical:
 
-    walk hello.o
-    cd .. && walk 111-compile/hello.o
-    cd .. && walk test/111-compile/hello.o
+    $ walk hello.o
+    $ cd .. && walk 111-compile/hello.o
+    $ cd .. && walk test/111-compile/hello.o
 
 See more at <https://github.com/ejholmes/walk/tree/master/test>.
 
 ## SIGNALS
 
 When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to
-any rules that are currently executing. With that in mind, it's a good idea to
-ensure that any potentially long running rules handle these signals to
+any targets that are currently executing. With that in mind, it's a good idea to
+ensure that any potentially long running targets handle these signals to
 terminate gracefully.
 
 ## BUGS

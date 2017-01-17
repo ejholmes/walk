@@ -58,7 +58,7 @@
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#OPTIONS">OPTIONS</a>
     <a href="#TARGETS">TARGETS</a>
-    <a href="#RULES">RULES</a>
+    <a href="#WALKFILE">WALKFILE</a>
     <a href="#PHASES">PHASES</a>
     <a href="#COMPARISONS">COMPARISONS</a>
     <a href="#EXAMPLES">EXAMPLES</a>
@@ -108,7 +108,7 @@ dependencies can be built.</p>
 <h2 id="OPTIONS">OPTIONS</h2>
 
 <dl>
-<dt class="flush"><code>-v</code></dt><dd><p>Show stdout from rules when executing the <strong>exec</strong> phase.</p></dd>
+<dt class="flush"><code>-v</code></dt><dd><p>Show stdout from the <code>Walkfile</code> when executing the <strong>exec</strong> phase.</p></dd>
 <dt class="flush"><code>-d</code></dt><dd><p>Print the dependencies of the target. This can be used in conjunction with
 a file watching utility like <span class="man-ref">fswatch<span class="s">(1)</span></span> to execute a target whenever its
 dependencies have changed.</p></dd>
@@ -119,7 +119,7 @@ this to a value greater than <code>1</code>. To execute targets serially, set th
 <code>1</code>.</p></dd>
 <dt class="flush"><code>-p</code></dt><dd><p>Prints the underlying DAG to stdout, using the provided format. Available
 formats are <code>dot</code>.</p></dd>
-<dt><code>--noprefix</code></dt><dd><p>By default, the stdout/stderr output from rules is prefixed with the name
+<dt><code>--noprefix</code></dt><dd><p>By default, the stdout/stderr output from the <code>Walkfile</code> is prefixed with the name
 of the target, followed by a tab character. This flag disables the
 prefixing. This can help with performance, or issues where you encounter
 "too many open files", since prefixing necessitates more file descriptors.</p></dd>
@@ -134,49 +134,18 @@ to files that need to be built, like <code>src/hello.o</code>. When a target doe
 relate to an actual file on disk, it's synonymous with <code>.PHONY</code> targets in
 <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>.</p>
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> will look for a "rule" file to determine if it has dependencies, or
-needs to be built. Rules are described below.</p>
+<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> delegates to an executable file called <a href="#WALKFILE" title="WALKFILE" data-bare-link="true">Walkfile</a> within the same
+directory as the target, to determine what dependencies the target has, and how
+to execute it.</p>
 
-<h2 id="RULES">RULES</h2>
+<h2 id="WALKFILE">WALKFILE</h2>
 
-<p>Rules determine <em>how</em> a target is executed, and what other targets it depends
-on. Rules are defined as executable files.</p>
+<p>The <code>Walkfile</code> determines <em>how</em> a target is executed, and what other targets it
+depends on.</p>
 
-<p>When <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it first attempts to find a
-compatible rule for the target by looking at executable files ending in <code>.walk</code>
-or any files inside a <code>.walk</code> directory. As an example, say we wanted to build
-<code>hello.o</code> by executing <code>walk hello.o</code>. <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> will attempt, in order, the
-following files:</p>
-
-<pre><code>.walk/hello.o
-hello.o.walk
-.walk/default.o
-default.o.walk
-</code></pre>
-
-<p>As an example, a simple rule file for building <code>.o</code> files from <code>.c</code> files,
-could be named <code>default.o.walk</code> and might look like this:</p>
-
-<pre><code>#!/bin/bash
-
-target=$2
-src=${2//.o/.c}
-
-deps() {
-  echo $src
-}
-
-compile() {
-  gcc -Wall -o $target -c $src
-}
-
-case $1 in
-  deps) deps ;;
-  exec) compile ;;
-esac
-</code></pre>
-
-<p>When walk executes a rule, it executes it with the following positional arguments:</p>
+<p>When <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it attempts to find an executable
+file called <code>Walkfile</code> in the same directory as the target, and then executes
+it with the following positional arguments:</p>
 
 <dl>
 <dt class="flush"><code>$1</code></dt><dd><p>The <a href="#PHASES" title="PHASES" data-bare-link="true">phase</a> (<code>deps</code> or <code>exec</code>).</p></dd>
@@ -184,33 +153,31 @@ esac
 </dl>
 
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> will only look for these files in the same directory that the target is
-in. If no suitable rule is found, and the file already exists, then <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a>
-assumes that it's a static file, and simply checks for it's existence.</p>
+<p>It's up to the <code>Walkfile</code> to determine what dependencies the target has, and
+how to execute it. In general, it's good practice to make the Walkfile delegate
+to some named executables in a <code>.walk</code> directory, like this:</p>
 
-<p>It's generally considered good practice to add an <code>all</code> target in each
-directory, which allows you to execute <code>walk</code> within it. For example, you may
-have a series of modules in subdirectories, each with their own <code>all</code> target,
-then the parent directory specifies all of those sub directories as
-dependencies.</p>
+<pre><code>#!/bin/bash
+
+case $2 in
+  all|test|clean) exec ./.walk/$2 $@ ;;
+end
+</code></pre>
 
 <h2 id="PHASES">PHASES</h2>
 
 <p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> has two phases:</p>
 
 <dl>
-<dt class="flush"><code>Plan</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all the rules with <code>deps</code> as the first
-argument. Rules are expected to print a newline delimited list of files
-that the target depends on, relative to the target. Internally, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a>
-builds a graph of all of the targets and their dependencies.</p></dd>
-<dt class="flush"><code>Exec</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all of the rules files with <code>exec</code> as the
-first argument. Rules are expected to build the given target, but don't
+<dt class="flush"><code>Plan</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes the <code>Walkfile</code> with <code>deps</code> as the first
+argument. The <code>Walkfile</code> is expected to print a newline delimited list of
+files that the target depends on, relative to the target. Internally,
+<a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> builds a graph of all of the targets and their dependencies.</p></dd>
+<dt class="flush"><code>Exec</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes the <code>Walkfile</code> with <code>exec</code> as the first
+argument. The <code>Walkfile</code> is expected to build the given target, but don't
 need to if it's, for example, a task (like <code>test</code>, <code>clean</code>, etc).</p></dd>
 </dl>
 
-
-<p>By separating these phases, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> can build a compact dependency graph, and
-perform fast parallel builds.</p>
 
 <h2 id="COMPARISONS">COMPARISONS</h2>
 
@@ -256,23 +223,49 @@ the same result. Recursiveness comes for free.</dd>
 
 <p>When <code>walk</code> is invoked without any arguments, it defaults to a target called <code>all</code>:</p>
 
-<pre><code>walk
+<pre><code>$ walk
 </code></pre>
+
+<p>Here's what happens within <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> when we execute this:</p>
+
+<ol>
+<li><p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> resolves all of the dependencies, and builds a graph:</p>
+
+<pre><code> $ Walkfile deps all
+ hello
+ $ Walkfile deps hello
+ hello.o
+ $ Walkfile deps hello.o
+ hello.c
+ hello.h
+ $ Walkfile deps hello.c
+ $ Walkfile deps hello.h
+</code></pre></li>
+<li><p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all of the targets, starting with dependencies:</p>
+
+<pre><code> $ Walkfile exec hello.c
+ $ Walkfile exec hello.h
+ $ Walkfile exec hello.o
+ $ Walkfile exec hello
+ $ Walkfile exec all
+</code></pre></li>
+</ol>
+
 
 <p>You can provide one or more targets as arguments to specify where to start
 execution from. For example, if wanted to build just <code>hello.o</code> and any of it's
 dependencies:</p>
 
-<pre><code>walk hello.o
+<pre><code>$ walk hello.o
 </code></pre>
 
-<p>When rules are executed, they're always executed relative to the basename of
+<p>When targets are executed, they're always executed relative to the directory of
 the target. This means that we can execute <code>walk</code> from any directory, and
 always get the same behavior. All of the following are identical:</p>
 
-<pre><code>walk hello.o
-cd .. &amp;&amp; walk 111-compile/hello.o
-cd .. &amp;&amp; walk test/111-compile/hello.o
+<pre><code>$ walk hello.o
+$ cd .. &amp;&amp; walk 111-compile/hello.o
+$ cd .. &amp;&amp; walk test/111-compile/hello.o
 </code></pre>
 
 <p>See more at <a href="https://github.com/ejholmes/walk/tree/master/test" data-bare-link="true">https://github.com/ejholmes/walk/tree/master/test</a>.</p>
@@ -280,8 +273,8 @@ cd .. &amp;&amp; walk test/111-compile/hello.o
 <h2 id="SIGNALS">SIGNALS</h2>
 
 <p>When <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> receives SIGINT or SIGTERM, it will forward these signals down to
-any rules that are currently executing. With that in mind, it's a good idea to
-ensure that any potentially long running rules handle these signals to
+any targets that are currently executing. With that in mind, it's a good idea to
+ensure that any potentially long running targets handle these signals to
 terminate gracefully.</p>
 
 <h2 id="BUGS">BUGS</h2>

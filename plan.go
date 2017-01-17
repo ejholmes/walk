@@ -18,6 +18,8 @@ const (
 	PhaseExec = "exec"
 )
 
+const Walkfile = "Walkfile"
+
 // Rule defines what a target depends on, and how to execute it.
 type Rule interface {
 	// Dependencies returns the name of the targets that this target depends
@@ -220,15 +222,7 @@ type targetError struct {
 }
 
 func (e *targetError) Error() string {
-	prefix := e.target.Name()
-	if e.target.rulefile != "" {
-		path := e.target.rulefile
-		if p, err := filepath.Rel(e.target.wd, path); err == nil {
-			path = p
-		}
-		prefix += fmt.Sprintf(" (executing %s)", path)
-	}
-	return fmt.Sprintf("%s: %v", prefix, e.err)
+	return fmt.Sprintf("%s: %v", e.target.Name(), e.err)
 }
 
 // target is a Target implementation, that represents a file on disk, which may
@@ -281,18 +275,6 @@ func (t *target) Name() string {
 
 // Exec executes the rule with "exec" as the first argument.
 func (t *target) Exec(ctx context.Context) error {
-	if t.rulefile == "" {
-		// It's possible for a target to simply be a static file, in which case
-		// we don't need to perform a build. We do however want to ensure that
-		// it exists in this case.
-		//
-		// TODO(ejholmes): Do we really want to do this? There may be
-		// cases where we don't actually need to verify that the file
-		// exists on disk...
-		_, err := os.Stat(t.path)
-		return err
-	}
-
 	cmd := t.ruleCommand(ctx, PhaseExec)
 	return cmd.Run()
 }
@@ -348,15 +330,13 @@ type verboseTarget struct {
 
 func (t *verboseTarget) Exec(ctx context.Context) error {
 	err := t.target.Exec(ctx)
-	if t.rulefile != "" {
-		prefix := "ok"
-		color := "32"
-		if err != nil {
-			prefix = "error"
-			color = "31"
-		}
-		fmt.Fprintf(t.stdout, "%s\t%s\n", ansi(color, "%s", prefix), t.target.Name())
+	prefix := "ok"
+	color := "32"
+	if err != nil {
+		prefix = "error"
+		color = "31"
 	}
+	fmt.Fprintf(t.stdout, "%s\t%s\n", ansi(color, "%s", prefix), t.target.Name())
 	if err != nil {
 		return &targetError{t.target, err}
 	}
@@ -364,22 +344,12 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 }
 
 // RuleFile is used to determine the path to an executable which will be used as
-// the Rule to execute the given target. Given a target `hello.o`, this will try
-// the following paths (relative to hello.o):
-//
-//	.walk/hello.o
-//	hello.o.walk
-//	.walk/default.o
-//	default.o.walk
+// the Rule to execute the given target. At the moment, this simply looks for an
+// executable file called `Walkfile` in the same directory as the target.
 func RuleFile(path string) string {
 	dir := filepath.Dir(path)
-	name := filepath.Base(path)
-	ext := filepath.Ext(name)
 	try := []string{
-		filepath.Join(".walk", name),                          // .walk/hello.o
-		fmt.Sprintf("%s.walk", name),                          // hello.o.walk
-		filepath.Join(".walk", fmt.Sprintf("default%s", ext)), // .walk/default.o
-		fmt.Sprintf("default%s.walk", ext),                    // default.o.walk
+		Walkfile,
 	}
 
 	for _, n := range try {

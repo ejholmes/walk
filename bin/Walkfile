@@ -1,0 +1,7 @@
+#!/bin/bash
+
+case $2 in
+  all) ./.walk/all $@ ;;
+  walk) ./.walk/walk $@ ;;
+  walk-*) env GOOS="${2##walk-}" ./.walk/walk $@ ;;
+esac
