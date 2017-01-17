@@ -1,9 +1,14 @@
 #!/bin/bash
 
+deps() {
+  ls *.go
+}
+
 install() {
   exec go install .
 }
 
 case $1 in
+  deps) deps ;;
   exec) install ;;
 esac

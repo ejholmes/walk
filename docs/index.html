@@ -134,49 +134,18 @@ to files that need to be built, like <code>src/hello.o</code>. When a target doe
 relate to an actual file on disk, it's synonymous with <code>.PHONY</code> targets in
 <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>.</p>
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> will look for a "rule" file to determine if it has dependencies, or
-needs to be built. Rules are described below.</p>
+<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> delegates to an executable file called <code>Walkfile</code> within the same
+directory as the target, to determine what dependencies the target has, and how
+to execute it.</p>
 
 <h2 id="RULES">RULES</h2>
 
 <p>Rules determine <em>how</em> a target is executed, and what other targets it depends
-on. Rules are defined as executable files.</p>
+on.</p>
 
-<p>When <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it first attempts to find a
-compatible rule for the target by looking at executable files ending in <code>.walk</code>
-or any files inside a <code>.walk</code> directory. As an example, say we wanted to build
-<code>hello.o</code> by executing <code>walk hello.o</code>. <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> will attempt, in order, the
-following files:</p>
-
-<pre><code>.walk/hello.o
-hello.o.walk
-.walk/default.o
-default.o.walk
-</code></pre>
-
-<p>As an example, a simple rule file for building <code>.o</code> files from <code>.c</code> files,
-could be named <code>default.o.walk</code> and might look like this:</p>
-
-<pre><code>#!/bin/bash
-
-target=$2
-src=${2//.o/.c}
-
-deps() {
-  echo $src
-}
-
-compile() {
-  gcc -Wall -o $target -c $src
-}
-
-case $1 in
-  deps) deps ;;
-  exec) compile ;;
-esac
-</code></pre>
-
-<p>When walk executes a rule, it executes it with the following positional arguments:</p>
+<p>When <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it attempts to find an executable
+file called <code>Walkfile</code> in the same directory as the target, and then executes
+this rule with the following positional arguments:</p>
 
 <dl>
 <dt class="flush"><code>$1</code></dt><dd><p>The <a href="#PHASES" title="PHASES" data-bare-link="true">phase</a> (<code>deps</code> or <code>exec</code>).</p></dd>
@@ -184,28 +153,29 @@ esac
 </dl>
 
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> will only look for these files in the same directory that the target is
-in. If no suitable rule is found, and the file already exists, then <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a>
-assumes that it's a static file, and simply checks for it's existence.</p>
+<p>It's up to the <code>Walkfile</code> to determine what dependencies the target has, and
+how to execute it. In general, it's good practice to make the Walkfile delegate
+to same named executables in a <code>.walk</code> directory, like this:</p>
 
-<p>It's generally considered good practice to add an <code>all</code> target in each
-directory, which allows you to execute <code>walk</code> within it. For example, you may
-have a series of modules in subdirectories, each with their own <code>all</code> target,
-then the parent directory specifies all of those sub directories as
-dependencies.</p>
+<pre><code>#!/bin/bash
+
+case $2 in
+  all) exec ./.walk/all $@ ;;
+end
+</code></pre>
 
 <h2 id="PHASES">PHASES</h2>
 
 <p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> has two phases:</p>
 
 <dl>
-<dt class="flush"><code>Plan</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all the rules with <code>deps</code> as the first
-argument. Rules are expected to print a newline delimited list of files
-that the target depends on, relative to the target. Internally, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a>
-builds a graph of all of the targets and their dependencies.</p></dd>
-<dt class="flush"><code>Exec</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all of the rules files with <code>exec</code> as the
-first argument. Rules are expected to build the given target, but don't
-need to if it's, for example, a task (like <code>test</code>, <code>clean</code>, etc).</p></dd>
+<dt class="flush"><code>Plan</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all the <code>Walkfile</code> with <code>deps</code> as the first
+argument. The <code>Walkfile</code> is expected to print a newline delimited list of
+files that the target depends on, relative to the target. Internally,
+<a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> builds a graph of all of the targets and their dependencies.</p></dd>
+<dt class="flush"><code>Exec</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all of the <code>Walkfile</code> files with <code>exec</code> as
+the first argument. The <code>Walkfile</code> is expected to build the given target,
+but don't need to if it's, for example, a task (like <code>test</code>, <code>clean</code>, etc).</p></dd>
 </dl>
 
 

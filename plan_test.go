@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -75,27 +74,6 @@ func TestTarget_Dependencies_EmptyTarget(t *testing.T) {
 	deps, err := target.Dependencies(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"test/000-empty-dependency/a", "test/000-empty-dependency/b"}, deps)
-}
-
-func TestRuleFile(t *testing.T) {
-	wd, err := os.Getwd()
-	assert.NoError(t, err)
-
-	tests := []struct {
-		target string
-		rule   string
-	}{
-		{abs(wd, "test/110-compile/hello.o"), abs(wd, "test/110-compile/hello.o.walk")},
-		{"test/111-compile/hello.o", "test/111-compile/default.o.walk"},
-		{"test", ".walk/test"},
-		{"foo", ""},
-	}
-
-	for i, tt := range tests {
-		t.Run(fmt.Sprintf("%d: %s", i, tt.target), func(t *testing.T) {
-			assert.Equal(t, tt.rule, RuleFile(tt.target))
-		})
-	}
 }
 
 func TestPrefixWriter(t *testing.T) {

@@ -50,58 +50,13 @@ By default, the stdout/stderr output from rules is prefixed with the name of the
 Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
 .
 .P
-walk(1) will look for a "rule" file to determine if it has dependencies, or needs to be built\. Rules are described below\.
+walk(1) delegates to an executable file called \fBWalkfile\fR within the same directory as the target, to determine what dependencies the target has, and how to execute it\.
 .
 .SH "RULES"
-Rules determine \fIhow\fR a target is executed, and what other targets it depends on\. Rules are defined as executable files\.
+Rules determine \fIhow\fR a target is executed, and what other targets it depends on\.
 .
 .P
-When walk(1) begins execution of a target, it first attempts to find a compatible rule for the target by looking at executable files ending in \fB\.walk\fR or any files inside a \fB\.walk\fR directory\. As an example, say we wanted to build \fBhello\.o\fR by executing \fBwalk hello\.o\fR\. walk(1) will attempt, in order, the following files:
-.
-.IP "" 4
-.
-.nf
-
-\&\.walk/hello\.o
-hello\.o\.walk
-\.walk/default\.o
-default\.o\.walk
-.
-.fi
-.
-.IP "" 0
-.
-.P
-As an example, a simple rule file for building \fB\.o\fR files from \fB\.c\fR files, could be named \fBdefault\.o\.walk\fR and might look like this:
-.
-.IP "" 4
-.
-.nf
-
-#!/bin/bash
-
-target=$2
-src=${2//\.o/\.c}
-
-deps() {
-  echo $src
-}
-
-compile() {
-  gcc \-Wall \-o $target \-c $src
-}
-
-case $1 in
-  deps) deps ;;
-  exec) compile ;;
-esac
-.
-.fi
-.
-.IP "" 0
-.
-.P
-When walk executes a rule, it executes it with the following positional arguments:
+When walk(1) begins execution of a target, it attempts to find an executable file called \fBWalkfile\fR in the same directory as the target, and then executes this rule with the following positional arguments:
 .
 .TP
 \fB$1\fR
@@ -112,21 +67,32 @@ The \fIphase\fR (\fBdeps\fR or \fBexec\fR)\.
 The name of the target to build (e\.g\. \fBhello\.o\fR)\.
 .
 .P
-walk(1) will only look for these files in the same directory that the target is in\. If no suitable rule is found, and the file already exists, then walk(1) assumes that it\'s a static file, and simply checks for it\'s existence\.
+It\'s up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\. In general, it\'s good practice to make the Walkfile delegate to same named executables in a \fB\.walk\fR directory, like this:
 .
-.P
-It\'s generally considered good practice to add an \fBall\fR target in each directory, which allows you to execute \fBwalk\fR within it\. For example, you may have a series of modules in subdirectories, each with their own \fBall\fR target, then the parent directory specifies all of those sub directories as dependencies\.
+.IP "" 4
+.
+.nf
+
+#!/bin/bash
+
+case $2 in
+  all) exec \./\.walk/all $@ ;;
+end
+.
+.fi
+.
+.IP "" 0
 .
 .SH "PHASES"
 walk(1) has two phases:
 .
 .TP
 \fBPlan\fR
-In this phase, walk(1) executes all the rules with \fBdeps\fR as the first argument\. Rules are expected to print a newline delimited list of files that the target depends on, relative to the target\. Internally, walk(1) builds a graph of all of the targets and their dependencies\.
+In this phase, walk(1) executes all the \fBWalkfile\fR with \fBdeps\fR as the first argument\. The \fBWalkfile\fR is expected to print a newline delimited list of files that the target depends on, relative to the target\. Internally, walk(1) builds a graph of all of the targets and their dependencies\.
 .
 .TP
 \fBExec\fR
-In this phase, walk(1) executes all of the rules files with \fBexec\fR as the first argument\. Rules are expected to build the given target, but don\'t need to if it\'s, for example, a task (like \fBtest\fR, \fBclean\fR, etc)\.
+In this phase, walk(1) executes all of the \fBWalkfile\fR files with \fBexec\fR as the first argument\. The \fBWalkfile\fR is expected to build the given target, but don\'t need to if it\'s, for example, a task (like \fBtest\fR, \fBclean\fR, etc)\.
 .
 .P
 By separating these phases, walk(1) can build a compact dependency graph, and perform fast parallel builds\.
