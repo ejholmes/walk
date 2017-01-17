@@ -1,5 +1,11 @@
 # Changelog
 
+## HEAD
+
+**Features**
+
+* walk(1) now simply delegates to a single `Walkfile` [#17](https://github.com/ejholmes/walk/pull/17)
+
 ## 0.2.1 (2017-01-17)
 
 **Features**

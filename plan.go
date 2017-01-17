@@ -275,18 +275,6 @@ func (t *target) Name() string {
 
 // Exec executes the rule with "exec" as the first argument.
 func (t *target) Exec(ctx context.Context) error {
-	if t.rulefile == "" {
-		// It's possible for a target to simply be a static file, in which case
-		// we don't need to perform a build. We do however want to ensure that
-		// it exists in this case.
-		//
-		// TODO(ejholmes): Do we really want to do this? There may be
-		// cases where we don't actually need to verify that the file
-		// exists on disk...
-		_, err := os.Stat(t.path)
-		return err
-	}
-
 	cmd := t.ruleCommand(ctx, PhaseExec)
 	return cmd.Run()
 }

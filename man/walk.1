@@ -28,7 +28,7 @@ walk(1) can be used to build just about anything, from C/C++ programs to fronten
 .
 .TP
 \fB\-v\fR
-Show stdout from rules when executing the \fBexec\fR phase\.
+Show stdout from the \fBWalkfile\fR when executing the \fBexec\fR phase\.
 .
 .TP
 \fB\-d\fR
@@ -44,19 +44,19 @@ Prints the underlying DAG to stdout, using the provided format\. Available forma
 .
 .TP
 \fB\-\-noprefix\fR
-By default, the stdout/stderr output from rules is prefixed with the name of the target, followed by a tab character\. This flag disables the prefixing\. This can help with performance, or issues where you encounter "too many open files", since prefixing necessitates more file descriptors\.
+By default, the stdout/stderr output from the \fBWalkfile\fR is prefixed with the name of the target, followed by a tab character\. This flag disables the prefixing\. This can help with performance, or issues where you encounter "too many open files", since prefixing necessitates more file descriptors\.
 .
 .SH "TARGETS"
 Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
 .
 .P
-walk(1) delegates to an executable file called \fBWalkfile\fR within the same directory as the target, to determine what dependencies the target has, and how to execute it\.
+walk(1) delegates to an executable file called \fIWalkfile\fR within the same directory as the target, to determine what dependencies the target has, and how to execute it\.
 .
-.SH "RULES"
-Rules determine \fIhow\fR a target is executed, and what other targets it depends on\.
+.SH "WALKFILE"
+The \fBWalkfile\fR determines \fIhow\fR a target is executed, and what other targets it depends on\.
 .
 .P
-When walk(1) begins execution of a target, it attempts to find an executable file called \fBWalkfile\fR in the same directory as the target, and then executes this rule with the following positional arguments:
+When walk(1) begins execution of a target, it attempts to find an executable file called \fBWalkfile\fR in the same directory as the target, and then executes it with the following positional arguments:
 .
 .TP
 \fB$1\fR
@@ -67,7 +67,7 @@ The \fIphase\fR (\fBdeps\fR or \fBexec\fR)\.
 The name of the target to build (e\.g\. \fBhello\.o\fR)\.
 .
 .P
-It\'s up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\. In general, it\'s good practice to make the Walkfile delegate to same named executables in a \fB\.walk\fR directory, like this:
+It\'s up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\. In general, it\'s good practice to make the Walkfile delegate to some named executables in a \fB\.walk\fR directory, like this:
 .
 .IP "" 4
 .
@@ -76,7 +76,7 @@ It\'s up to the \fBWalkfile\fR to determine what dependencies the target has, an
 #!/bin/bash
 
 case $2 in
-  all) exec \./\.walk/all $@ ;;
+  all|test|clean) exec \./\.walk/$2 $@ ;;
 end
 .
 .fi
@@ -88,14 +88,11 @@ walk(1) has two phases:
 .
 .TP
 \fBPlan\fR
-In this phase, walk(1) executes all the \fBWalkfile\fR with \fBdeps\fR as the first argument\. The \fBWalkfile\fR is expected to print a newline delimited list of files that the target depends on, relative to the target\. Internally, walk(1) builds a graph of all of the targets and their dependencies\.
+In this phase, walk(1) executes the \fBWalkfile\fR with \fBdeps\fR as the first argument\. The \fBWalkfile\fR is expected to print a newline delimited list of files that the target depends on, relative to the target\. Internally, walk(1) builds a graph of all of the targets and their dependencies\.
 .
 .TP
 \fBExec\fR
-In this phase, walk(1) executes all of the \fBWalkfile\fR files with \fBexec\fR as the first argument\. The \fBWalkfile\fR is expected to build the given target, but don\'t need to if it\'s, for example, a task (like \fBtest\fR, \fBclean\fR, etc)\.
-.
-.P
-By separating these phases, walk(1) can build a compact dependency graph, and perform fast parallel builds\.
+In this phase, walk(1) executes the \fBWalkfile\fR with \fBexec\fR as the first argument\. The \fBWalkfile\fR is expected to build the given target, but don\'t need to if it\'s, for example, a task (like \fBtest\fR, \fBclean\fR, etc)\.
 .
 .SH "COMPARISONS"
 walk(1) is heavily inspired by make(1) and redo \fIhttps://github\.com/apenwarr/redo\fR\. There are a number of reasons why walk(1) may be better in certain scenarios:
@@ -138,9 +135,54 @@ When \fBwalk\fR is invoked without any arguments, it defaults to a target called
 .
 .nf
 
-walk
+$ walk
 .
 .fi
+.
+.IP "" 0
+.
+.P
+Here\'s what happens within walk(1) when we execute this:
+.
+.IP "1." 4
+walk(1) resolves all of the dependencies, and builds a graph:
+.
+.IP "" 4
+.
+.nf
+
+ $ Walkfile deps all
+ hello
+ $ Walkfile deps hello
+ hello\.o
+ $ Walkfile deps hello\.o
+ hello\.c
+ hello\.h
+ $ Walkfile deps hello\.c
+ $ Walkfile deps hello\.h
+.
+.fi
+.
+.IP "" 0
+
+.
+.IP "2." 4
+walk(1) executes all of the targets, starting with dependencies:
+.
+.IP "" 4
+.
+.nf
+
+ $ Walkfile exec hello\.c
+ $ Walkfile exec hello\.h
+ $ Walkfile exec hello\.o
+ $ Walkfile exec hello
+ $ Walkfile exec all
+.
+.fi
+.
+.IP "" 0
+
 .
 .IP "" 0
 .
@@ -151,22 +193,22 @@ You can provide one or more targets as arguments to specify where to start execu
 .
 .nf
 
-walk hello\.o
+$ walk hello\.o
 .
 .fi
 .
 .IP "" 0
 .
 .P
-When rules are executed, they\'re always executed relative to the basename of the target\. This means that we can execute \fBwalk\fR from any directory, and always get the same behavior\. All of the following are identical:
+When targets are executed, they\'re always executed relative to the directory of the target\. This means that we can execute \fBwalk\fR from any directory, and always get the same behavior\. All of the following are identical:
 .
 .IP "" 4
 .
 .nf
 
-walk hello\.o
-cd \.\. && walk 111\-compile/hello\.o
-cd \.\. && walk test/111\-compile/hello\.o
+$ walk hello\.o
+$ cd \.\. && walk 111\-compile/hello\.o
+$ cd \.\. && walk test/111\-compile/hello\.o
 .
 .fi
 .
@@ -176,7 +218,7 @@ cd \.\. && walk test/111\-compile/hello\.o
 See more at \fIhttps://github\.com/ejholmes/walk/tree/master/test\fR\.
 .
 .SH "SIGNALS"
-When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to any rules that are currently executing\. With that in mind, it\'s a good idea to ensure that any potentially long running rules handle these signals to terminate gracefully\.
+When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to any targets that are currently executing\. With that in mind, it\'s a good idea to ensure that any potentially long running targets handle these signals to terminate gracefully\.
 .
 .SH "BUGS"
 You can find a list of bugs at \fIhttps://github\.com/ejholmes/walk/issues\fR\. Please report any issues there\.
