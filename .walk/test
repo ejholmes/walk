@@ -4,11 +4,6 @@ deps() {
   echo test/all
 }
 
-tests() {
-  go test -race ./...
-}
-
 case $1 in
   deps) deps ;;
-  exec) tests ;;
 esac

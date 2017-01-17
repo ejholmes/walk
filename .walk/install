@@ -1,7 +1,7 @@
 #!/bin/bash
 
 install() {
-  go install .
+  exec go install .
 }
 
 case $1 in
