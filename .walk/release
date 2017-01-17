@@ -22,6 +22,11 @@ deps() {
 release() {
   local tag=v$(cat VERSION)
 
+  if [ -z "$GITHUB_TOKEN" ]; then
+    >&2 echo "GITHUB_TOKEN is missing."
+    return 1
+  fi
+
   git tag ${tag} && git push --tags
 
   gh release \

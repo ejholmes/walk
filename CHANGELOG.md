@@ -1,6 +1,6 @@
 # Changelog
 
-## HEAD
+## 0.2.1 (2017-01-17)
 
 **Features**
 

@@ -21,7 +21,7 @@ go test ./...
 
 ## Releasing
 
-Bump the version number in [VERSION](./VERSION), then run:
+Bump the version number in [VERSION](./VERSION), update CHANGELOG.md, then run:
 
 ```console
 $ walk -v version.go
