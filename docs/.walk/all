@@ -1,9 +1,0 @@
-#!/bin/bash
-
-deps() {
-  echo index.html
-}
-
-case $1 in
-  deps) deps ;;
-esac

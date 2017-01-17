@@ -1,1 +1,15 @@
-../Walkfile
+#!/bin/bash
+
+target=$2
+
+case $target in
+  all)
+    case $1 in
+      deps) echo index.html ;;
+    esac ;;
+  index.html)
+    case $1 in
+      deps) echo ../man/walk.1.html ;;
+      exec) cp ../man/walk.1.html index.html ;;
+    esac ;;
+esac
