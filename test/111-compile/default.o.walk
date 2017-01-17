@@ -4,11 +4,11 @@ target=$2
 src=${2//.o/.c}
 
 deps() {
-  gcc -MM $src | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
+  exec gcc -MM $src | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
 }
 
 compile() {
-  gcc -Wall -o $target -c $src
+  exec gcc -Wall -o $target -c $src
 }
 
 case $1 in

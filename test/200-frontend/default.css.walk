@@ -10,7 +10,7 @@ deps() {
 }
 
 convert() {
-  bundle exec sass ${target%.css}.sass > $target
+  exec bundle exec sass ${target//.css/.sass} > $target
 }
 
 case $1 in

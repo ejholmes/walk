@@ -5,7 +5,7 @@ deps() {
 }
 
 tests() {
-  cmp application.css application.css.expected
+  exec cmp application.css application.css.expected
 }
 
 case $1 in

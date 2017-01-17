@@ -5,7 +5,7 @@ deps() {
 }
 
 compile() {
-  gcc -Wall -o hello $(deps)
+  exec gcc -Wall -o hello $(deps)
 }
 
 case $1 in
