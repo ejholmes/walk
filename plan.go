@@ -90,6 +90,7 @@ func NewTarget(options TargetOptions) func(string) (Target, error) {
 		}
 		return &verboseTarget{
 			target: t,
+			stdout: options.Stdout,
 		}, nil
 	}
 }
@@ -342,6 +343,7 @@ func (t *target) ruleCommand(ctx context.Context, phase string) *exec.Cmd {
 // verboseTarget simply wraps a target to print to to stdout when it's Exec'd.
 type verboseTarget struct {
 	*target
+	stdout io.Writer
 }
 
 func (t *verboseTarget) Exec(ctx context.Context) error {
@@ -353,7 +355,7 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 			prefix = "error"
 			color = "31"
 		}
-		fmt.Printf("%s\t%s\n", ansi(color, "%s", prefix), t.target.Name())
+		fmt.Fprintf(t.stdout, "%s\t%s\n", ansi(color, "%s", prefix), t.target.Name())
 	}
 	if err != nil {
 		return &targetError{t.target, err}
