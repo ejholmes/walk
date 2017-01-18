@@ -1,8 +1,0 @@
-digraph {
-  "prog" -> "main.o"
-  "prog" -> "parse.o"
-  "main.o" -> "main.c"
-  "main.o" -> "main.h"
-  "parse.o" -> "parse.c"
-  "parse.o" -> "parse.h"
-}
