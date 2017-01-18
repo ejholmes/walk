@@ -121,6 +121,6 @@ ok	all
 
 walk(1) always executes a Walkfile in the same directory as the target. So if you specified a target name like `src/hello.o`, then walk(1) will execute a Walkfile in the `src` directory. This allows for uniform execution, so that walk(1) can be executed from any directory, and always get the same result. This also makes it easy to build up increasingly complex build systems, by composing targets in subdirectories, which is very difficult to do with make(1).
 
-And that's basically all you need to know about walk(1). Walkfile's can be written in any language you want, as long as they adhere to this very simply contract. No complicated, restrictive syntax to learn!
+And that's basically all you need to know about walk(1). Walkfile's can be written in any language you want, as long as they adhere to this very simple contract. No complicated, restrictive syntax to learn!
 
 See also [`man walk`](http://ejholmes.io/walk/).
