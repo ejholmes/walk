@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# The first argument is the "phase", which will either be `deps` or `exec`. In
+# the `deps` phase, the Walkfile should print the name of the targets that this
+# target depends on.
+phase=$1
+
+# The second argument is the name of the target, like `prog`, `src/parse.o`,
+# etc.
+target=$2
+
+case $target in
+  prog)
+    case $phase in
+      # Prog depends on the object files we'll build from source. We simply
+      # print each dependency on a single line.
+      deps)
+        echo main.o
+        echo parse.o
+        ;;
+      exec) exec gcc -Wall -o $target $($0 deps $target) ;;
+    esac ;;
+
+  # A generic recipe for building a .o file from a corresponding .c file.
+  *.o)
+    case $phase in
+      deps) echo ${target//.o/.c} ;;
+      exec) exec gcc -Wall -o $target -c $($0 deps $target) ;;
+    esac ;;
+
+  # When invoking walk(1) without any arguments, it defaults to a target called
+  # `all`.
+  all)
+    case $phase in
+      deps) echo prog ;;
+    esac ;;
+esac
