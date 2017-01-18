@@ -1,0 +1,9 @@
+#!/bin/bash
+
+deps() {
+  echo bin/all
+}
+
+case $1 in
+  deps) deps ;;
+esac

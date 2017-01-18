@@ -3,11 +3,11 @@
 target=$2
 
 deps() {
-  ls ../src
+  ls *.go | grep -v _test
 }
 
 build() {
-  exec go build -o $target ..
+  deps > "$target"
 }
 
 case $1 in

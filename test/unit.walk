@@ -3,7 +3,7 @@
 target=$1
 
 deps() {
-  ls ../*.go
+  echo ../src
 }
 
 tests() {
