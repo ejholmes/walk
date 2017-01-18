@@ -24,6 +24,8 @@ $ go get -u github.com/ejholmes/walk
 
 Or grab the latest release from https://github.com/ejholmes/walk/releases.
 
+**NOTE**: walk(1) is currently not considered stable, and there may be breaking changes before the 1.0 release.
+
 ## Usage
 
 walk(1) is built on top of a very simple concept; when you want to build a target, walk(1) executes a file called `Walkfile` to determine:
