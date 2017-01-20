@@ -37,14 +37,14 @@ dependencies can be built.
     a file watching utility like fswatch(1) to execute a target whenever its
     dependencies have changed.
 
-  * `-j`:
+  * `-j`=<number>:
     Controls the number of targets that are executed in parallel. By default,
     targets are executed with the maximum level of parallelism that the graph
     allows. To limit the number of targets that are executed in parallel, set
     this to a value greater than `1`. To execute targets serially, set this to
     `1`.
 
-  * `-p`:
+  * `-p`=<format>:
     Prints the underlying DAG to stdout, using the provided format. Available
     formats are `dot`.
 

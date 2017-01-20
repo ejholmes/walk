@@ -35,11 +35,11 @@ Show stdout from the \fBWalkfile\fR when executing the \fBexec\fR phase\.
 Print the dependencies of the target\. This can be used in conjunction with a file watching utility like fswatch(1) to execute a target whenever its dependencies have changed\.
 .
 .TP
-\fB\-j\fR
+\fB\-j\fR=\fInumber\fR
 Controls the number of targets that are executed in parallel\. By default, targets are executed with the maximum level of parallelism that the graph allows\. To limit the number of targets that are executed in parallel, set this to a value greater than \fB1\fR\. To execute targets serially, set this to \fB1\fR\.
 .
 .TP
-\fB\-p\fR
+\fB\-p\fR=\fIformat\fR
 Prints the underlying DAG to stdout, using the provided format\. Available formats are \fBdot\fR\.
 .
 .TP

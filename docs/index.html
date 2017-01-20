@@ -112,12 +112,12 @@ dependencies can be built.</p>
 <dt class="flush"><code>-d</code></dt><dd><p>Print the dependencies of the target. This can be used in conjunction with
 a file watching utility like <span class="man-ref">fswatch<span class="s">(1)</span></span> to execute a target whenever its
 dependencies have changed.</p></dd>
-<dt class="flush"><code>-j</code></dt><dd><p>Controls the number of targets that are executed in parallel. By default,
+<dt><code>-j</code>=<var>number</var></dt><dd><p>Controls the number of targets that are executed in parallel. By default,
 targets are executed with the maximum level of parallelism that the graph
 allows. To limit the number of targets that are executed in parallel, set
 this to a value greater than <code>1</code>. To execute targets serially, set this to
 <code>1</code>.</p></dd>
-<dt class="flush"><code>-p</code></dt><dd><p>Prints the underlying DAG to stdout, using the provided format. Available
+<dt><code>-p</code>=<var>format</var></dt><dd><p>Prints the underlying DAG to stdout, using the provided format. Available
 formats are <code>dot</code>.</p></dd>
 <dt><code>--noprefix</code></dt><dd><p>By default, the stdout/stderr output from the <code>Walkfile</code> is prefixed with the name
 of the target, followed by a tab character. This flag disables the
