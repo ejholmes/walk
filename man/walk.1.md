@@ -209,5 +209,3 @@ Walk is Copyright (C) 2017 Eric Holmes
 ## SEE ALSO
 
 make(1), bash(1)
-
-# vi:filetype=markdown

@@ -3,10 +3,11 @@
 target=$2
 
 deps() {
-  echo "$target".ronn
+  echo "$target".md
 }
 
 build() {
+  cp "$target".md "$target".ronn
   exec ronn "$target".ronn 2> /dev/null
 }
 
