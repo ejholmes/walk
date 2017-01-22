@@ -43,8 +43,7 @@ For example, if you wanted to build a program called `prog` from [main.c](./test
 # target depends on.
 phase=$1
 
-# The second argument is the name of the target, like `prog`, `src/parse.o`,
-# etc.
+# The second argument is the name of the target, like `prog`, `parse.o`, etc.
 target=$2
 
 case $target in
