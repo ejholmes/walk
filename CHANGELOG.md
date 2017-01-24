@@ -5,6 +5,7 @@
 **Improvements**
 
 * Errors are now shown for failed/errored targets. [813434b](https://github.com/ejholmes/walk/commit/813434b77d23c4ce0209d7b1f0f9eecb0aaccf3b)
+* If a directory doesn't contain a Walkfile, walk(1) will no longer attempt to execute it. [0502d1f](https://github.com/ejholmes/walk/commit/0502d1f8eab49d1b0724dacc068fb812729bc75c)
 
 ## 0.3.0 (2017-01-18)
 
