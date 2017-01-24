@@ -24,6 +24,6 @@ case $target in
   walk.1.html)
     case $phase in
       # Building walk.1 with ronn implicitly builds walk.1.html
-      deps) echo walk.1 ;;
+      deps) echo ${target%.html} ;;
     esac
 esac
