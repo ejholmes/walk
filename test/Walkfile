@@ -1,1 +1,42 @@
-../Walkfile.default
+#!/bin/bash
+
+phase=$1
+target=$2
+
+case $target in
+  all)
+    case $phase in
+      deps) echo integration ;;
+    esac ;;
+
+  clean)
+    case $phase in
+      deps)
+        echo 111-compile/clean
+        echo 110-compile/clean
+        echo 200-frontend/clean
+        ;;
+    esac ;;
+
+  bundled)
+    case $phase in
+      exec) exec bundle install ;
+    esac ;;
+
+  integration)
+    case $phase in
+      deps)
+        echo bundled
+        echo 110-compile/all
+        echo 111-compile/all
+        echo 200-frontend/all
+        echo 300-docker/all
+        ;;
+    esac ;;
+
+  unit)
+    case $phase in
+      deps) echo ../src ;;
+      exec) exec go test -race ../...
+    esac ;;
+esac
