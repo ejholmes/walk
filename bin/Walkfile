@@ -1,7 +1,36 @@
 #!/bin/bash
 
-case $2 in
-  all) ./.walk/all $@ ;;
-  walk) ./.walk/walk $@ ;;
-  walk-*) env GOOS="${2##walk-}" ./.walk/walk $@ ;;
+phase=$1
+target=$2
+
+build() {
+  exec go build -o $target ..
+}
+
+case $target in
+  all)
+    case $phase in
+      deps)
+        echo walk
+        echo walk-linux
+        echo walk-darwin
+        ;;
+    esac ;;
+
+  clean)
+    case $phase in
+      exec) rm walk walk-* ;;
+    esac ;;
+
+  walk|walk-*)
+    case $phase in
+      deps) echo ../src ;;
+      exec)
+        if [ "$target" != "walk" ]; then
+          arch=${target##walk-}
+          export GOOS="$arch"
+        fi
+        build
+        ;;
+    esac ;;
 esac

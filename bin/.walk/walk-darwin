@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export GOOS=darwin
-
-exec .walk/walk $@

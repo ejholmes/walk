@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export GOOS=linux
-
-exec .walk/walk $@

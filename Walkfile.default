@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# This is a generic Walkfile that attempts to find an executable matching the
+# targets name. For example, given the target "parse.o", the following paths will be tried:
+#
+#   .walk/hello.o
+#   hello.o.walk
+#   .walk/default.o
+#   default.o.walk
+
+target=$2
+ext=${target##*.}
+rules=("./.walk/$target" "./$target.walk" "./.walk/default.$ext" "./default.$ext.walk")
+
+for f in "${rules[@]}"; do
+  if [ -f "$f" ]; then
+    exec "$f" "$@"
+  fi
+done
