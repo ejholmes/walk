@@ -67,7 +67,7 @@ func (g *Graph) Connect(target, dependency Target) {
 	g.dag.Connect(dag.BasicEdge(target.Name(), dependency.Name()))
 }
 
-// Returns the Target with the given name.
+// Target returns the Target with the given name.
 func (g *Graph) Target(name string) Target {
 	g.mu.Lock()
 	target := g.target(name)
@@ -80,7 +80,7 @@ func (g *Graph) Walk(fn func(Target) error) error {
 	errors := newWalkError()
 	err := g.dag.Walk(func(v dag.Vertex) error {
 		target := g.Target(v.(string))
-		// We don't actually need to walk the root, since it's a psuedo
+		// We don't actually need to walk the root, since it's a pseudo
 		// target.
 		if _, ok := target.(*rootTarget); ok {
 			return nil
@@ -97,6 +97,7 @@ func (g *Graph) Walk(fn func(Target) error) error {
 	return err
 }
 
+// Dependencies returns all of the dependencies of target.
 func (g *Graph) Dependencies(target string) ([]Target, error) {
 	set, err := g.dag.Ancestors(target)
 	if err != nil {
@@ -109,10 +110,12 @@ func (g *Graph) Dependencies(target string) ([]Target, error) {
 	return t, nil
 }
 
+// TransitiveReduction performs a Transitive reduction of the underyling graph.
 func (g *Graph) TransitiveReduction() {
 	g.dag.TransitiveReduction()
 }
 
+// Validate validates the underlying graph.
 func (g *Graph) Validate() error {
 	return g.dag.Validate()
 }
@@ -125,7 +128,7 @@ func (g *Graph) target(name string) Target {
 	return g.m[name]
 }
 
-// rootTarget is a psuedo target for the root of the graph.
+// rootTarget is a pseudo target for the root of the graph.
 type rootTarget struct {
 	deps []string
 }

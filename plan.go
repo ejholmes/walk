@@ -18,6 +18,8 @@ const (
 	PhaseExec = "exec"
 )
 
+// Walkfile is the name of the file that will be executed to plan and build
+// targets.
 const Walkfile = "Walkfile"
 
 // Rule defines what a target depends on, and how to execute it.
@@ -98,7 +100,7 @@ func NewTarget(options TargetOptions) func(string) (Target, error) {
 }
 
 // Plan is used to build a graph of all the targets and their dependencies. It
-// offers two primary methods; `Plan` and `Exec`, which correspend to the `deps`
+// offers two primary methods; `Plan` and `Exec`, which correspond to the `deps`
 // and `exec` phases respectively.
 type Plan struct {
 	// NewTarget is executed when a target is discovered during Plan. This
@@ -133,7 +135,7 @@ func (p *Plan) String() string {
 	return p.graph.String()
 }
 
-// Returns an array of all of the given targets dependencies. Should be called
+// Dependencies returns an array of all of the given targets dependencies. Should be called
 // after Plan.
 func (p *Plan) Dependencies(target string) ([]Target, error) {
 	return p.graph.Dependencies(target)
@@ -204,7 +206,7 @@ func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 }
 
 // Exec begins walking the graph, executing the "exec" phase of each targets
-// Rule. Targets Exec functions are gauranteed to be called when all of the
+// Rule. Targets Exec functions are guaranteed to be called when all of the
 // Targets dependencies have been fulfilled.
 func (p *Plan) Exec(ctx context.Context, semaphore Semaphore) error {
 	return p.graph.Walk(func(t Target) error {

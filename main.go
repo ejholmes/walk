@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	// When no target is provided on the command line, this target will be
-	// executed.
+	// DefaultTarget is the name of the target that is used when no target
+	// is provided on the command line.
 	DefaultTarget = "all"
 )
 
