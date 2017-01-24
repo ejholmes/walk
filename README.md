@@ -1,4 +1,7 @@
-# [Walk](http://ejholmes.io/walk/) [![Build Status](https://travis-ci.org/ejholmes/walk.svg?branch=master)](https://travis-ci.org/ejholmes/walk)
+# [Walk](http://ejholmes.io/walk/)
+
+[![Build Status](https://travis-ci.org/ejholmes/walk.svg?branch=master)](https://travis-ci.org/ejholmes/walk)
+[![Latest Version](https://img.shields.io/github/release/ejholmes/walk.svg?style=flat?maxAge=86400)](https://github.com/ejholmes/walk/releases)
 
 walk(1) is a fast, general purpose, graph based build and task execution utility.
 
