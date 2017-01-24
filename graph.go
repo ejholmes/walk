@@ -110,7 +110,7 @@ func (g *Graph) Dependencies(target string) ([]Target, error) {
 	return t, nil
 }
 
-// TransitiveReduction performs a Transitive reduction of the underyling graph.
+// TransitiveReduction performs a Transitive reduction of the underlying graph.
 func (g *Graph) TransitiveReduction() {
 	g.dag.TransitiveReduction()
 }
