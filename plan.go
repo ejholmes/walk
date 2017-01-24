@@ -22,6 +22,16 @@ const (
 // targets.
 const Walkfile = "Walkfile"
 
+// NoWalkfileError can be returned when a target doesn't have a Walkfile present
+// in it's directory.
+type NoWalkfileError struct {
+	Dir string
+}
+
+func (e *NoWalkfileError) Error() string {
+	return fmt.Sprintf("no %s in %s", Walkfile, e.Dir)
+}
+
 // Rule defines what a target depends on, and how to execute it.
 type Rule interface {
 	// Dependencies returns the name of the targets that this target depends
@@ -277,7 +287,10 @@ func (t *target) Name() string {
 
 // Exec executes the rule with "exec" as the first argument.
 func (t *target) Exec(ctx context.Context) error {
-	cmd := t.ruleCommand(ctx, PhaseExec)
+	cmd, err := t.ruleCommand(ctx, PhaseExec)
+	if err != nil {
+		return err
+	}
 	return cmd.Run()
 }
 
@@ -290,7 +303,10 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 	}
 
 	b := new(bytes.Buffer)
-	cmd := t.ruleCommand(ctx, PhaseDeps)
+	cmd, err := t.ruleCommand(ctx, PhaseDeps)
+	if err != nil {
+		return nil, err
+	}
 	cmd.Stdout = b
 
 	if err := cmd.Run(); err != nil {
@@ -315,13 +331,17 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 	return deps, scanner.Err()
 }
 
-func (t *target) ruleCommand(ctx context.Context, phase string) *exec.Cmd {
+func (t *target) ruleCommand(ctx context.Context, phase string) (*exec.Cmd, error) {
+	if t.rulefile == "" {
+		return nil, &NoWalkfileError{Dir: filepath.Dir(t.name)}
+	}
+
 	name := filepath.Base(t.path)
 	cmd := exec.CommandContext(ctx, t.rulefile, phase, name)
 	cmd.Stdout = t.stdout
 	cmd.Stderr = t.stderr
 	cmd.Dir = t.dir
-	return cmd
+	return cmd, nil
 }
 
 // verboseTarget simply wraps a target to print to to stdout when it's Exec'd.
@@ -338,7 +358,11 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 		prefix = "error"
 		color = "31"
 	}
-	fmt.Fprintf(t.stdout, "%s\t%s\n", ansi(color, "%s", prefix), t.target.Name())
+	line := fmt.Sprintf("%s\t%s", ansi(color, "%s", prefix), t.target.Name())
+	if err != nil {
+		line = fmt.Sprintf("%s\t%s", line, err)
+	}
+	fmt.Fprintf(t.stdout, "%s\n", line)
 	if err != nil {
 		return &targetError{t.target, err}
 	}

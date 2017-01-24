@@ -76,6 +76,40 @@ func TestTarget_Dependencies_EmptyTarget(t *testing.T) {
 	assert.Equal(t, []string{"test/000-empty-dependency/a", "test/000-empty-dependency/b"}, deps)
 }
 
+func TestPlan_Error(t *testing.T) {
+	clean(t)
+
+	b := new(bytes.Buffer)
+	plan := newPlan()
+	plan.NewTarget = NewTarget(TargetOptions{
+		Stdout: b,
+	})
+	err := plan.Plan(ctx, "test/000-cancel/fail")
+	assert.NoError(t, err)
+
+	err = plan.Exec(ctx, NewSemaphore(0))
+	assert.Error(t, err)
+
+	assert.Equal(t, "error\ttest/000-cancel/fail\texit status 1\n", b.String())
+}
+
+func TestPlan_NoWalkfile(t *testing.T) {
+	clean(t)
+
+	b := new(bytes.Buffer)
+	plan := newPlan()
+	plan.NewTarget = NewTarget(TargetOptions{
+		Stdout: b,
+	})
+	err := plan.Plan(ctx, "test/000-no-walkfile/all")
+	assert.NoError(t, err)
+
+	err = plan.Exec(ctx, NewSemaphore(0))
+	assert.Error(t, err)
+
+	assert.Equal(t, "error\ttest/000-no-walkfile/all\tno Walkfile in test/000-no-walkfile\n", b.String())
+}
+
 func TestPrefixWriter(t *testing.T) {
 	b := new(bytes.Buffer)
 	w := &prefixWriter{w: b, prefix: []byte("prefix: ")}
