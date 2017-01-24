@@ -1,5 +1,0 @@
-#!/bin/bash
-
-case $1 in
-  exec) exec bundle install ;;
-esac

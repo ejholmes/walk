@@ -1,9 +1,0 @@
-#!/bin/bash
-
-deps() {
-  echo integration
-}
-
-case $1 in
-  deps) deps ;;
-esac
