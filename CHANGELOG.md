@@ -1,5 +1,11 @@
 # Changelog
 
+## HEAD
+
+**Improvements**
+
+* Errors are now shown for failed/errored targets. [813434b](https://github.com/ejholmes/walk/commit/813434b77d23c4ce0209d7b1f0f9eecb0aaccf3b)
+
 ## 0.3.0 (2017-01-18)
 
 **Features**
