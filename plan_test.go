@@ -105,9 +105,11 @@ func TestPlan_NoWalkfile(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = plan.Exec(ctx, NewSemaphore(0))
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
-	assert.Equal(t, "error\ttest/000-no-walkfile/all\tno Walkfile in test/000-no-walkfile\n", b.String())
+	// If there's no Walkfile in the directory, it might just be a static
+	// file. We don't really need to show these in output.
+	assert.Equal(t, "", b.String())
 }
 
 func TestPrefixWriter(t *testing.T) {

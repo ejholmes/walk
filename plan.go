@@ -22,16 +22,6 @@ const (
 // targets.
 const Walkfile = "Walkfile"
 
-// NoWalkfileError can be returned when a target doesn't have a Walkfile present
-// in it's directory.
-type NoWalkfileError struct {
-	Dir string
-}
-
-func (e *NoWalkfileError) Error() string {
-	return fmt.Sprintf("no %s in %s", Walkfile, e.Dir)
-}
-
 // Rule defines what a target depends on, and how to execute it.
 type Rule interface {
 	// Dependencies returns the name of the targets that this target depends
@@ -287,6 +277,11 @@ func (t *target) Name() string {
 
 // Exec executes the rule with "exec" as the first argument.
 func (t *target) Exec(ctx context.Context) error {
+	// No .walk file, meaning it's a static dependency.
+	if t.rulefile == "" {
+		return nil
+	}
+
 	cmd, err := t.ruleCommand(ctx, PhaseExec)
 	if err != nil {
 		return err
@@ -332,10 +327,6 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 }
 
 func (t *target) ruleCommand(ctx context.Context, phase string) (*exec.Cmd, error) {
-	if t.rulefile == "" {
-		return nil, &NoWalkfileError{Dir: filepath.Dir(t.name)}
-	}
-
 	name := filepath.Base(t.path)
 	cmd := exec.CommandContext(ctx, t.rulefile, phase, name)
 	cmd.Stdout = t.stdout
@@ -362,7 +353,9 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 	if err != nil {
 		line = fmt.Sprintf("%s\t%s", line, err)
 	}
-	fmt.Fprintf(t.stdout, "%s\n", line)
+	if t.rulefile != "" {
+		fmt.Fprintf(t.stdout, "%s\n", line)
+	}
 	if err != nil {
 		return &targetError{t.target, err}
 	}
