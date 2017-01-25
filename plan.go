@@ -18,6 +18,13 @@ const (
 	PhaseExec = "exec"
 )
 
+type Direction int
+
+const (
+	Forward Direction = iota
+	Reverse
+)
+
 // Walkfile is the name of the file that will be executed to plan and build
 // targets.
 const Walkfile = "Walkfile"
@@ -29,7 +36,7 @@ type Rule interface {
 	Dependencies(context.Context) ([]string, error)
 
 	// Exec executes the target.
-	Exec(context.Context) error
+	Exec(context.Context, Direction) error
 }
 
 // Target represents a target, which is usually built by a Rule. In general,
@@ -118,7 +125,7 @@ func Exec(ctx context.Context, semaphore Semaphore, targets ...string) error {
 	if err != nil {
 		return err
 	}
-	return plan.Exec(ctx, semaphore)
+	return plan.Exec(ctx, semaphore, Forward)
 }
 
 // newPlan returns a new initialized Plan instance.
@@ -202,11 +209,15 @@ func (p *Plan) newTarget(ctx context.Context, target string) (Target, error) {
 // Exec begins walking the graph, executing the "exec" phase of each targets
 // Rule. Targets Exec functions are guaranteed to be called when all of the
 // Targets dependencies have been fulfilled.
-func (p *Plan) Exec(ctx context.Context, semaphore Semaphore) error {
-	return p.graph.Walk(func(t Target) error {
+func (p *Plan) Exec(ctx context.Context, semaphore Semaphore, dir Direction) error {
+	g := p.graph
+	if dir == Reverse {
+		g = g.Transpose()
+	}
+	return g.Walk(func(t Target) error {
 		semaphore.P()
 		defer semaphore.V()
-		return t.Exec(ctx)
+		return t.Exec(ctx, dir)
 	})
 }
 
@@ -270,7 +281,7 @@ func (t *target) Name() string {
 }
 
 // Exec executes the rule with "exec" as the first argument.
-func (t *target) Exec(ctx context.Context) error {
+func (t *target) Exec(ctx context.Context, direction Direction) error {
 	// No .walk file, meaning it's a static dependency.
 	if t.rulefile == "" {
 		return nil
@@ -280,6 +291,11 @@ func (t *target) Exec(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	d := "f"
+	if direction == Reverse {
+		d = "r"
+	}
+	cmd.Args = append(cmd.Args, d)
 	return cmd.Run()
 }
 
@@ -335,8 +351,8 @@ type verboseTarget struct {
 	stdout io.Writer
 }
 
-func (t *verboseTarget) Exec(ctx context.Context) error {
-	err := t.target.Exec(ctx)
+func (t *verboseTarget) Exec(ctx context.Context, dir Direction) error {
+	err := t.target.Exec(ctx, dir)
 	prefix := "ok"
 	color := "32"
 	if err != nil {

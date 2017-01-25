@@ -37,6 +37,7 @@ func main() {
 		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
 		noprefix    = flag.Bool("noprefix", false, "Disables the prefixing of stdout/stderr from rules with the name of the target.")
 		concurrency = flag.Uint("j", 0, "The number of targets that are executed in parallel.")
+		reverse     = flag.Bool("r", false, "Walk the graph in reverse.")
 		print       = flag.String("p", "", "Print the graph that will be executed and exit.")
 	)
 	flag.Parse()
@@ -77,7 +78,11 @@ func main() {
 		must(fn(os.Stdout, plan.graph))
 	} else {
 		semaphore := NewSemaphore(*concurrency)
-		must(plan.Exec(ctx, semaphore))
+		dir := Forward
+		if *reverse {
+			dir = Reverse
+		}
+		must(plan.Exec(ctx, semaphore, dir))
 	}
 }
 

@@ -260,6 +260,25 @@ func TestAcyclicGraphWalk_error(t *testing.T) {
 	t.Fatalf("bad: %#v", visits)
 }
 
+func TestAcyclicGraphTranpose(t *testing.T) {
+	var g AcyclicGraph
+	g.Add(1)
+	g.Add(2)
+	g.Add(3)
+	g.Add(4)
+	g.Connect(BasicEdge(2, 1))
+	g.Connect(BasicEdge(3, 1))
+	g.Connect(BasicEdge(4, 3))
+	g.Connect(BasicEdge(4, 2))
+
+	tg := g.Transpose()
+	actual := strings.TrimSpace(tg.String())
+	expected := strings.TrimSpace(testGraphTransposed)
+	if actual != expected {
+		t.Fatalf("bad: %s", actual)
+	}
+}
+
 const testGraphTransReductionStr = `
 1
   2
@@ -273,6 +292,17 @@ const testGraphTransReductionMoreStr = `
   2
 2
   3
+3
+  4
+4
+`
+
+const testGraphTransposed = `
+1
+  2
+  3
+2
+  4
 3
   4
 4

@@ -107,6 +107,13 @@ func (g *Graph) Validate() error {
 	return g.dag.Validate()
 }
 
+func (g *Graph) Transpose() *Graph {
+	return &Graph{
+		m:   g.m,
+		dag: g.dag.Transpose(),
+	}
+}
+
 func (g *Graph) String() string {
 	return g.dag.String()
 }
@@ -124,7 +131,7 @@ func (t *rootTarget) Name() string {
 	return "(root)"
 }
 
-func (t *rootTarget) Exec(_ context.Context) error {
+func (t *rootTarget) Exec(_ context.Context, _ Direction) error {
 	panic("unreachable")
 }
 

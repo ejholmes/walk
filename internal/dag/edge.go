@@ -8,6 +8,7 @@ import (
 type Edge interface {
 	Source() Vertex
 	Target() Vertex
+	Transposed() Edge
 
 	Hashable
 }
@@ -34,4 +35,8 @@ func (e *basicEdge) Source() Vertex {
 
 func (e *basicEdge) Target() Vertex {
 	return e.T
+}
+
+func (e *basicEdge) Transposed() Edge {
+	return BasicEdge(e.T, e.S)
 }

@@ -351,6 +351,17 @@ func (g *AcyclicGraph) ReverseDepthFirstWalk(start []Vertex, f DepthWalkFunc) er
 	return nil
 }
 
+// Transpose reverses the graph, such that an edge A -> B becomes B -> A.
+func (g *AcyclicGraph) Transpose() *AcyclicGraph {
+	var tg AcyclicGraph
+	for _, edge := range g.Edges() {
+		tg.Add(edge.Target())
+		tg.Add(edge.Source())
+		tg.Connect(edge.Transposed())
+	}
+	return &tg
+}
+
 // byVertexName implements sort.Interface so a list of Vertices can be sorted
 // consistently by their VertexName
 type byVertexName []Vertex
