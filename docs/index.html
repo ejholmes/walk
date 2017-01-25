@@ -82,8 +82,7 @@
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
 <p><code>walk</code> <code>--help</code><br />
-<code>walk</code> [<code>-v</code>] [target...]<br />
-<code>walk</code> [<code>-d</code>] [target]</p>
+<code>walk</code> [<code>-v</code>] [target...]<br /></p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
@@ -109,16 +108,13 @@ dependencies can be built.</p>
 
 <dl>
 <dt class="flush"><code>-v</code></dt><dd><p>Show stdout from the <code>Walkfile</code> when executing the <strong>exec</strong> phase.</p></dd>
-<dt class="flush"><code>-d</code></dt><dd><p>Print the dependencies of the target. This can be used in conjunction with
-a file watching utility like <span class="man-ref">fswatch<span class="s">(1)</span></span> to execute a target whenever its
-dependencies have changed.</p></dd>
 <dt><code>-j</code>=<var>number</var></dt><dd><p>Controls the number of targets that are executed in parallel. By default,
 targets are executed with the maximum level of parallelism that the graph
 allows. To limit the number of targets that are executed in parallel, set
 this to a value greater than <code>1</code>. To execute targets serially, set this to
 <code>1</code>.</p></dd>
 <dt><code>-p</code>=<var>format</var></dt><dd><p>Prints the underlying DAG to stdout, using the provided format. Available
-formats are <code>dot</code>.</p></dd>
+formats are <code>dot</code> and <code>plain</code>.</p></dd>
 <dt><code>--noprefix</code></dt><dd><p>By default, the stdout/stderr output from the <code>Walkfile</code> is prefixed with the name
 of the target, followed by a tab character. This flag disables the
 prefixing. This can help with performance, or issues where you encounter

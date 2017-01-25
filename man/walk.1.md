@@ -5,7 +5,6 @@ walk(1) -- A fast, general purpose, graph based build and task execution utility
 
 `walk` `--help`<br>
 `walk` [`-v`] [target...]<br>
-`walk` [`-d`] [target]
 
 ## DESCRIPTION
 
@@ -32,11 +31,6 @@ dependencies can be built.
   * `-v`:
     Show stdout from the `Walkfile` when executing the **exec** phase.
 
-  * `-d`:
-    Print the dependencies of the target. This can be used in conjunction with
-    a file watching utility like fswatch(1) to execute a target whenever its
-    dependencies have changed.
-
   * `-j`=<number>:
     Controls the number of targets that are executed in parallel. By default,
     targets are executed with the maximum level of parallelism that the graph
@@ -46,7 +40,7 @@ dependencies can be built.
 
   * `-p`=<format>:
     Prints the underlying DAG to stdout, using the provided format. Available
-    formats are `dot`.
+    formats are `dot` and `plain`.
 
   * `--noprefix`:
     By default, the stdout/stderr output from the `Walkfile` is prefixed with the name

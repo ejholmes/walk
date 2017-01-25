@@ -97,19 +97,6 @@ func (g *Graph) Walk(fn func(Target) error) error {
 	return err
 }
 
-// Dependencies returns all of the dependencies of target.
-func (g *Graph) Dependencies(target string) ([]Target, error) {
-	set, err := g.dag.Ancestors(target)
-	if err != nil {
-		return nil, err
-	}
-	var t []Target
-	for _, v := range dag.AsVertexList(set) {
-		t = append(t, g.target(v.(string)))
-	}
-	return t, nil
-}
-
 // TransitiveReduction performs a Transitive reduction of the underlying graph.
 func (g *Graph) TransitiveReduction() {
 	g.dag.TransitiveReduction()
@@ -158,6 +145,15 @@ func dot(w io.Writer, g *Graph) error {
 	}
 	if _, err := io.WriteString(w, "}\n"); err != nil {
 		return err
+	}
+	return nil
+}
+
+func plain(w io.Writer, g *Graph) error {
+	for _, v := range g.dag.Vertices() {
+		if _, err := fmt.Fprintf(w, "%s\n", dag.VertexName(v)); err != nil {
+			return err
+		}
 	}
 	return nil
 }

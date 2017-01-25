@@ -47,40 +47,6 @@ func TestGraph(t *testing.T) {
 	assert.Equal(t, []string{"a", "b"}, targets)
 }
 
-func TestGraph_Dependencies(t *testing.T) {
-	g := newGraph()
-
-	a := &testTarget{name: "a"}
-	b := &testTarget{name: "b"}
-	c := &testTarget{name: "c"}
-	d := &testTarget{name: "d"}
-	r := &rootTarget{}
-
-	g.Add(a)
-	g.Add(b)
-	g.Add(c)
-	g.Add(r)
-
-	g.Connect(b, a)
-	g.Connect(c, b)
-	g.Connect(c, a)
-	g.Connect(d, c)
-	g.Connect(r, b)
-
-	deps := func(target string) []string {
-		d, err := g.Dependencies(target)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return targetNames(d)
-	}
-
-	assert.Nil(t, deps("a"))
-	assert.Equal(t, []string{"a"}, deps("b"))
-	assert.Equal(t, []string{"a", "b"}, deps("c"))
-	assert.Equal(t, []string{"a", "b", "c"}, deps("d"))
-}
-
 type testTarget struct {
 	name string
 }

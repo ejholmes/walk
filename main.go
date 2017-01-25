@@ -20,7 +20,8 @@ const (
 
 // Maps a named format to a function that renders the graph.
 var printGraph = map[string]func(io.Writer, *Graph) error{
-	"dot": dot,
+	"dot":   dot,
+	"plain": plain,
 }
 
 var isTTY bool
@@ -35,7 +36,6 @@ func main() {
 		version     = flag.Bool("version", false, "Print the version of walk and exit.")
 		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
 		noprefix    = flag.Bool("noprefix", false, "Disables the prefixing of stdout/stderr from rules with the name of the target.")
-		deps        = flag.Bool("d", false, "Print the dependencies of the target.")
 		concurrency = flag.Uint("j", 0, "The number of targets that are executed in parallel.")
 		print       = flag.String("p", "", "Print the graph that will be executed and exit.")
 	)
@@ -49,9 +49,6 @@ func main() {
 	targets := flag.Args()
 	if len(targets) == 0 {
 		targets = []string{DefaultTarget}
-	}
-	if *deps && len(targets) > 1 {
-		must(fmt.Errorf("only 1 target is allowed when using the -d flag."))
 	}
 
 	plan := newPlan()
@@ -72,13 +69,7 @@ func main() {
 	}()
 
 	must(plan.Plan(ctx, targets...))
-	if *deps {
-		deps, err := plan.Dependencies(targets[0])
-		must(err)
-		for _, t := range deps {
-			fmt.Println(t.Name())
-		}
-	} else if *print != "" {
+	if *print != "" {
 		fn, ok := printGraph[*print]
 		if !ok {
 			must(fmt.Errorf("invalid format provided: %s", *print))

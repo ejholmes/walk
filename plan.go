@@ -135,12 +135,6 @@ func (p *Plan) String() string {
 	return p.graph.String()
 }
 
-// Dependencies returns an array of all of the given targets dependencies. Should be called
-// after Plan.
-func (p *Plan) Dependencies(target string) ([]Target, error) {
-	return p.graph.Dependencies(target)
-}
-
 // Plan builds the graph, starting with the given target. It recursively
 // executes the "deps" phase of the targets rule, adding each dependency to the
 // graph as their found.
