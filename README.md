@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ejholmes/walk)](https://goreportcard.com/report/github.com/ejholmes/walk)
 [![Latest Version](https://img.shields.io/github/release/ejholmes/walk.svg?style=flat?maxAge=86400)](https://github.com/ejholmes/walk/releases)
 
-walk(1) is a fast, general purpose, graph based build and task execution utility.
+`walk` is a fast, general purpose, graph based build and task execution utility.
 
 Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https://github.com/apenwarr/redo).
 
@@ -28,11 +28,11 @@ $ go get -u github.com/ejholmes/walk
 
 Or grab the latest release from https://github.com/ejholmes/walk/releases.
 
-**NOTE**: walk(1) is currently not considered stable, and there may be breaking changes before the 1.0 release.
+**NOTE**: `walk` is currently not considered stable, and there may be breaking changes before the 1.0 release.
 
 ## Usage
 
-walk(1) is built on top of a very simple concept; when you want to build a target, walk(1) executes a file called `Walkfile` to determine:
+`walk` is built on top of a very simple concept; when you want to build a target, `walk` executes a file called `Walkfile` to determine:
 
 1. What other targets the given target depends on.
 2. How to build the target.
@@ -86,7 +86,7 @@ esac
 
 When you execute `walk all`, the following happens internally:
 
-1. walk(1) resolves all of the dependencies, and builds a graph:
+1. `walk` resolves all of the dependencies, and builds a graph:
 
     ```console
     $ Walkfile deps all
@@ -104,7 +104,7 @@ When you execute `walk all`, the following happens internally:
     $ Walkfile deps main.c
     ```
 
-2. walk(1) executes all of the targets, starting with dependencies:
+2. `walk` executes all of the targets, starting with dependencies:
 
     ```console
     $ Walkfile exec parse.c
@@ -128,8 +128,8 @@ ok	prog
 ok	all
 ```
 
-walk(1) always executes a Walkfile in the same directory as the target. So if you specified a target name like `src/hello.o`, then walk(1) will execute a Walkfile in the `src` directory. This allows for uniform execution, so that walk(1) can be executed from any directory, and always get the same result. This also makes it easy to build up increasingly complex build systems, by composing targets in subdirectories, which is very difficult to do with make(1).
+`walk` always executes a Walkfile in the same directory as the target. So if you specified a target name like `src/hello.o`, then `walk` will execute a Walkfile in the `src` directory. This allows for uniform execution, so that `walk` can be executed from any directory, and always get the same result. This also makes it easy to build up increasingly complex build systems, by composing targets in subdirectories, which is very difficult to do with make(1).
 
-And that's basically all you need to know about walk(1). Walkfile's can be written in any language you want, as long as they adhere to this very simple contract. No complicated, restrictive syntax to learn!
+And that's basically all you need to know about `walk`. Walkfile's can be written in any language you want, as long as they adhere to this very simple contract. No complicated, restrictive syntax to learn!
 
 See also [`man walk`](http://ejholmes.io/walk/).
