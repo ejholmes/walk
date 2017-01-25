@@ -1,5 +1,11 @@
 # Changelog
 
+## HEAD
+
+**Improvements**
+
+* The `-d` flag has been removed, and a `plain` format has been added to `-p`. [383c9e5](https://github.com/ejholmes/walk/commit/383c9e5d296c8f372194a27e241a62e242c16b17)
+
 ## 0.3.1 (2017-01-23)
 
 **Improvements**
