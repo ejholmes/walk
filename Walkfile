@@ -48,4 +48,7 @@ case $target in
     case $phase in
       deps) echo test/000-cancel/fail ;;
     esac ;;
+
+  VERSION|*.go) ;; # noops
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
 esac

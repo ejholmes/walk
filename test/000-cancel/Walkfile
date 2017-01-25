@@ -1,1 +1,31 @@
-../../Walkfile.default
+#!/bin/bash
+
+phase=$1
+target=$2
+
+sleepy() {
+  echo "Sleeping..."
+  exec sleep 60
+}
+
+case $target in
+  all)
+    case $phase in
+      deps)
+        echo a.sleep
+        echo b.sleep
+        ;;
+    esac ;;
+
+  fail)
+    case $phase in
+      exec) >&2 echo "Boom" && exit 1 ;;
+    esac ;;
+
+  *.sleep)
+    case $phase in
+      exec) sleepy ;;
+    esac ;;
+
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
+esac

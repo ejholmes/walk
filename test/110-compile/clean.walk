@@ -1,9 +1,0 @@
-#!/bin/bash
-
-clean() {
-  rm -rf *.o hello
-}
-
-case $1 in
-  exec) clean ;;
-esac

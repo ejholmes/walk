@@ -1,1 +1,57 @@
-../../Walkfile.default
+#!/bin/bash
+
+phase=$1
+target=$2
+
+clean() {
+  rm -rf *.css .sass-cache
+}
+
+tests() {
+  exec cmp application.css application.css.expected
+}
+
+case $target in
+  all)
+    case $phase in
+      deps) 
+        echo application.css
+        echo test
+        ;;
+    esac ;;
+
+  clean)
+    case $phase in
+      exec) clean ;;
+    esac ;;
+
+  test)
+    case $phase in
+      deps) echo application.css ;;
+      exec) tests ;;
+    esac ;;
+
+  application.css)
+    case $phase in
+      deps) 
+        echo layout.css
+        echo header.css
+        ;;
+      exec) 
+        cat layout.css > application.css
+        cat header.css >> application.css
+        ;;
+    esac ;;
+
+  # Rule to build a css file from a .sass file.
+  *.css)
+    case $phase in
+      deps)
+        echo ../bundled # ensure that we've installed the sass gem
+        # Depend on all *.sass files, in case there are imports. In reality, it
+        # would be nice if sass would tell us what a files dependencies were here.
+        find . -type f -iname '*.sass'
+        ;;
+      exec) exec bundle exec sass ${target//.css/.sass} > $target ;;
+    esac ;;
+esac

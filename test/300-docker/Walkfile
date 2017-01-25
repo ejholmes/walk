@@ -1,1 +1,28 @@
-../../Walkfile.default
+#!/bin/bash
+
+phase=$1
+target=$2
+
+dependent_image() {
+  ruby -e 'if match = STDIN.read.match(/FROM walk\/(.*)/); puts match[1] + ".docker" end'
+}
+
+case $target in
+  all)
+    case $phase in
+      deps) echo b.docker ;;
+    esac ;;
+
+  # Builds a docker image.
+  *.docker)
+    image=${target%.docker}
+    dockerfile=Dockerfile.$image
+
+    case $phase in
+      deps) 
+        echo $dockerfile
+        cat $dockerfile | dependent_image
+        ;;
+      exec) exec docker build -t walk/$image -f Dockerfile.$image . ;;
+    esac
+esac

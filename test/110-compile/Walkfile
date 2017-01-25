@@ -1,1 +1,35 @@
-../../Walkfile.default
+#!/bin/bash
+
+phase=$1
+target=$2
+
+clean() {
+  rm -rf *.o hello
+}
+
+case $target in
+  all)
+    case $phase in
+      deps)
+        echo hello
+        echo test
+        ;;
+    esac ;;
+
+  clean)
+    case $phase in
+      exec) clean ;;
+    esac ;;
+
+  hello.o)
+    case $phase in
+      deps) echo hello.c ;;
+      exec) exec gcc -Wall -o hello.o -c $($0 deps $target) ;;
+    esac ;;
+
+  hello)
+    case $phase in
+      deps) echo hello.o ;;
+      exec) exec gcc -Wall -o hello $($0 deps $target) ;;
+    esac
+esac

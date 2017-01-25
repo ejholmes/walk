@@ -1,1 +1,62 @@
-../../Walkfile.default
+#!/bin/bash
+
+phase=$1
+target=$2
+
+clean() {
+  rm -rf *.o hello
+}
+
+# Echoes out the files that the given .c file depends on, one per line.
+source_deps() {
+  local f=$1
+  gcc -MM $f | ruby -e "obj, deps = STDIN.read.split(':'); deps.split(' ').each { |d| puts d }"
+}
+
+# Returns whether or not any of the files provided are newer than the first file.
+changed() {
+  local f="$1"; shift
+
+  if [[ ! -f "$f" ]]; then
+    return 0
+  elif [[ -n "$(find $@ -newer $f)" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+case $target in
+  all)
+    case $phase in
+      deps)
+        echo hello
+        echo test
+        ;;
+    esac ;;
+
+  clean)
+    case $phase in
+      exec) clean ;;
+    esac ;;
+
+  *.o)
+    src=${target//.o/.c}
+
+    case $phase in
+      deps) source_deps $src ;;
+      exec) 
+        if changed "$target" $($0 deps $target); then
+          exec gcc -Wall -o $target -c $src
+        fi
+    esac ;;
+
+  hello)
+    case $phase in
+      deps) echo hello.o ;;
+      exec) 
+        if changed "$target" $($0 deps $target); then
+          exec gcc -Wall -o $target $($0 deps $target)
+        fi
+    esac
+esac

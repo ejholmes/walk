@@ -1,1 +1,20 @@
-../../Walkfile.default
+#!/bin/bash
+
+phase=$1
+target=$2
+
+case $target in
+  all)
+    case $phase in
+      deps)
+        for i in $(seq $(ulimit -n)); do
+          echo "$i.fd"
+        done
+        ;;
+    esac ;;
+
+  *.fd)
+    case $phase in
+      exec) exec sleep 1 ;;
+    esac ;;
+esac

@@ -1,9 +1,0 @@
-#!/bin/bash
-
-clean() {
-  rm -rf *.css .sass-cache
-}
-
-case $1 in
-  exec) clean ;;
-esac
