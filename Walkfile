@@ -1,10 +1,48 @@
 #!/bin/bash
 
+set -eo pipefail
+
+# When creating a new release, we'll build for these architectures. Maps to the
+# GOOS env var.
+release_archs=(darwin linux)
+
 phase=$1
 target=$2
 
 install() {
   exec go install .
+}
+
+# Creates a new release:
+#
+#  1. Tags the git commit with vX.X.X (from VERSION)
+#  2. Creates a GitHub release for the tag.
+#  3. Uploads all of the files, which are provided as positional arguments.
+release() {
+  local tag=v$(cat VERSION)
+  local user=ejholmes
+  local repo=walk
+
+  if [ -z "$GITHUB_TOKEN" ]; then
+    >&2 echo "GITHUB_TOKEN is missing."
+    return 1
+  fi
+
+  git tag ${tag} && git push && git push --tags
+
+  github-release release \
+    --user ${user} \
+    --repo ${repo} \
+    --tag ${tag}
+
+  for f in $@; do
+    github-release upload \
+      --user ${user} \
+      --repo ${repo} \
+      --tag ${tag} \
+      --name $(basename $f) \
+      --file $f
+  done
 }
 
 case $target in
@@ -32,7 +70,30 @@ case $target in
       exec) install ;;
     esac ;;
 
-  release|version.go) exec ./.walk/$target $@ ;;
+  release)
+    case $phase in
+      deps)
+        for arch in ${release_archs[@]}; do
+          echo bin/walk-$arch
+        done
+        ;;
+      exec) release $($0 deps $target) ;;
+    esac ;;
+
+  version.go)
+    case $phase in
+      deps) echo VERSION ;;
+      exec) 
+        cat <<EOF > "$target"
+// DO NOT MODIFY
+// Auto generated from by 'walk version.go'
+package main
+
+// Version is the version of walk(1)
+const Version = "$(cat VERSION)"
+EOF
+        ;;
+    esac ;;
 
   bin|test|docs|man)
     case $phase in
