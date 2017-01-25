@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -eo pipefail
+
+phase=$1
+target=$2
+
+case $target in
+  all)
+    case $phase in
+      deps) echo debian ;;
+    esac ;;
+
+  debian)
+    case $phase in
+      deps) echo $target/all ;;
+    esac ;;
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
+esac

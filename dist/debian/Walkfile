@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -eo pipefail
+
+phase=$1
+target=$2
+
+case $target in
+  all)
+    case $phase in
+      deps) echo walk.deb ;;
+    esac ;;
+
+  walk.deb)
+    image=ejholmes/walk:build-debian
+    bin="../../bin/walk-linux"
+    manpage="../../man/walk.1"
+
+    case $phase in
+      deps)
+        echo $bin
+        echo $manpage
+        echo DEBIAN/control
+        ;;
+      exec)
+        mkdir -p usr/local/bin usr/local/share/man/man1
+        cp $bin usr/local/bin/walk
+        cp $manpage usr/local/share/man/man1
+        docker build -t $image .
+        id=$(docker create $image)
+        rm -rf walk.deb.tmp
+        docker cp $id:/walk.deb walk.deb.tmp
+        mv walk.deb.tmp walk.deb
+        ;;
+    esac ;;
+
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
+esac

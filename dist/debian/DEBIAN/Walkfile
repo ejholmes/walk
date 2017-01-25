@@ -1,0 +1,35 @@
+#!/bin/bash
+
+phase=$1
+target=$2
+
+control() {
+  local version=$1
+
+  cat <<EOF
+Package: walk
+Version: $version
+Section: base
+Priority: optional
+Architecture: amd64
+Maintainer: Eric Holmes <eric@ejholmes.net>
+Description: A fast, general purpose, graph based build and task execution utility.
+EOF
+}
+
+case $target in
+  all)
+    case $phase in
+      deps) echo controll ;;
+    esac ;;
+
+  control)
+    version="../../../VERSION"
+
+    case $phase in
+      deps) echo $version ;;
+      exec) control $(cat $version) > $target ;;
+    esac ;;
+
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
+esac

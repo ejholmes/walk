@@ -76,6 +76,7 @@ case $target in
         for arch in ${release_archs[@]}; do
           echo bin/walk-$arch
         done
+        echo dist/debian/walk.deb
         ;;
       exec) release $($0 deps $target) ;;
     esac ;;
@@ -95,7 +96,7 @@ EOF
         ;;
     esac ;;
 
-  bin|test|docs|man)
+  bin|test|docs|man|dist)
     case $phase in
       deps) echo $target/all ;;
     esac ;;
