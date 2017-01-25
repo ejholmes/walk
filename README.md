@@ -75,6 +75,12 @@ case $target in
     case $phase in
       deps) echo prog ;;
     esac ;;
+
+  # In general, it's good practice to include a fallback rule like this, in
+  # case someone tries to build a target that we don't know how to build (or
+  # someone makes a typo).
+  *.c|*.h) ;; # static files
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
 esac
 ```
 
