@@ -33,4 +33,6 @@ case $target in
         build
         ;;
     esac ;;
+
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
 esac

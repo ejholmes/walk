@@ -39,4 +39,6 @@ case $target in
       deps) echo ../src ;;
       exec) exec go test -race ../...
     esac ;;
+
+  *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
 esac

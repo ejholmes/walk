@@ -76,14 +76,19 @@ it with the following positional arguments:
     The name of the target to build (e.g. `hello.o`).
 
 It's up to the `Walkfile` to determine what dependencies the target has, and
-how to execute it. In general, it's good practice to make the Walkfile delegate
-to some named executables in a `.walk` directory, like this:
+how to execute it.
+
+It's generally a good practice to make the Walkfile return an error if it
+doesn't know how to build a target, to prevent typos in targets.
 
     #!/bin/bash
 
-    case $2 in
-      all|test|clean) exec ./.walk/$2 $@ ;;
-    end
+    phase=$1
+    target=$2
+
+    case $target in
+      *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
+    esac
 
 ## PHASES
 
