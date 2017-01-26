@@ -28,9 +28,10 @@ case $target in
         cp $manpage usr/local/share/man/man1
         docker build -t $image .
         id=$(docker create $image)
-        rm -rf walk.deb.tmp
-        docker cp $id:/walk.deb walk.deb.tmp
-        mv walk.deb.tmp walk.deb
+        rm -rf $target.tmp
+        docker cp $id:/$target $target.tmp
+        docker rm $id
+        mv $target.tmp $target
         ;;
     esac ;;
 
