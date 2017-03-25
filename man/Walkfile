@@ -14,10 +14,13 @@ case $target in
 
   walk.1)
     case $phase in
-      deps) echo "$target".md ;;
+      deps)
+        echo "$target".md
+        echo ../bundled
+        ;;
       exec)
         cp "$target".md "$target".ronn
-        exec ronn "$target".ronn 2> /dev/null
+        exec bundle exec ronn "$target".ronn
         ;;
     esac ;;
 

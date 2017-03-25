@@ -96,6 +96,11 @@ EOF
         ;;
     esac ;;
 
+  bundled)
+    case $phase in
+      exec) exec bundle install ;
+    esac ;;
+
   bin|test|docs|man|dist)
     case $phase in
       deps) echo $target/all ;;

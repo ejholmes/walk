@@ -20,13 +20,13 @@ case $target in
 
   bundled)
     case $phase in
-      exec) exec bundle install ;
+      deps) echo ../bundled ;;
     esac ;;
 
   integration)
     case $phase in
       deps)
-        echo bundled
+        echo ../bundled
         echo 110-compile/all
         echo 111-compile/all
         echo 200-frontend/all

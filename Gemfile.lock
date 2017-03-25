@@ -1,0 +1,22 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    hpricot (0.8.6)
+    mustache (1.0.3)
+    rdiscount (2.2.0.1)
+    ronn (0.7.3)
+      hpricot (>= 0.8.2)
+      mustache (>= 0.7.0)
+      rdiscount (>= 1.5.8)
+    sass (3.4.22)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  mustache (= 1.0.3)
+  ronn
+  sass (= 3.4.22)
+
+BUNDLED WITH
+   1.14.5
