@@ -86,20 +86,20 @@
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> is a small utility that can be used to execute tasks, or build programs
+<p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> is a small utility that can be used to execute tasks, or build programs
 from source. It's similar to <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a> in many ways, but with some fundamental
 differences that make it vastly simpler, and arguably more powerful.</p>
 
-<p>At the core of <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> is a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed Acyclic
+<p>At the core of <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> is a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed Acyclic
 Graph</a> (DAG). DAG's are a
 magical data structure that allow you to easily express dependency trees.
 You'll find DAG's everywhere; in
 <a href="http://eagain.net/articles/git-for-computer-scientists/">git</a>, languages,
 <a href="https://github.com/hashicorp/terraform/tree/master/dag">infrastructure tools</a>,
-etc. <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> provides a generic primitive to express a DAG as a set of targets
+etc. <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> provides a generic primitive to express a DAG as a set of targets
 (files) that depend on each other.</p>
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> can be used to build just about anything, from C/C++ programs to
+<p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> can be used to build just about anything, from C/C++ programs to
 frontend applications (css, sass, coffeescript, etc) and infrastructure
 (CloudFormation, Terraform). Basically, anything that can express it's
 dependencies can be built.</p>
@@ -130,7 +130,7 @@ to files that need to be built, like <code>src/hello.o</code>. When a target doe
 relate to an actual file on disk, it's synonymous with <code>.PHONY</code> targets in
 <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>.</p>
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> delegates to an executable file called <a href="#WALKFILE" title="WALKFILE" data-bare-link="true">Walkfile</a> within the same
+<p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> delegates to an executable file called <a href="#WALKFILE" title="WALKFILE" data-bare-link="true">Walkfile</a> within the same
 directory as the target, to determine what dependencies the target has, and how
 to execute it.</p>
 
@@ -139,7 +139,7 @@ to execute it.</p>
 <p>The <code>Walkfile</code> determines <em>how</em> a target is executed, and what other targets it
 depends on.</p>
 
-<p>When <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it attempts to find an executable
+<p>When <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it attempts to find an executable
 file called <code>Walkfile</code> in the same directory as the target, and then executes
 it with the following positional arguments:</p>
 
@@ -167,14 +167,14 @@ esac
 
 <h2 id="PHASES">PHASES</h2>
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> has two phases:</p>
+<p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> has two phases:</p>
 
 <dl>
-<dt class="flush"><code>Plan</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes the <code>Walkfile</code> with <code>deps</code> as the first
+<dt class="flush"><code>Plan</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> executes the <code>Walkfile</code> with <code>deps</code> as the first
 argument. The <code>Walkfile</code> is expected to print a newline delimited list of
 files that the target depends on, relative to the target. Internally,
-<a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> builds a graph of all of the targets and their dependencies.</p></dd>
-<dt class="flush"><code>Exec</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes the <code>Walkfile</code> with <code>exec</code> as the first
+<a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> builds a graph of all of the targets and their dependencies.</p></dd>
+<dt class="flush"><code>Exec</code></dt><dd><p>In this phase, <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> executes the <code>Walkfile</code> with <code>exec</code> as the first
 argument. The <code>Walkfile</code> is expected to build the given target, but don't
 need to if it's, for example, a task (like <code>test</code>, <code>clean</code>, etc).</p></dd>
 </dl>
@@ -182,12 +182,12 @@ need to if it's, for example, a task (like <code>test</code>, <code>clean</code>
 
 <h2 id="COMPARISONS">COMPARISONS</h2>
 
-<p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> is heavily inspired by <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a> and
+<p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> is heavily inspired by <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a> and
 <a href="https://github.com/apenwarr/redo">redo</a>. There are a number of reasons why
-<a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> may be better in certain scenarios:</p>
+<a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> may be better in certain scenarios:</p>
 
 <dl>
-<dt><code>Simplicity</code></dt><dd><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> does not have anything synonymous with <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>'s
+<dt><code>Simplicity</code></dt><dd><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> does not have anything synonymous with <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>'s
 <a href="https://www.gnu.org/software/make/manual/make.html">Makefile</a>. Everything
 is simply defined as executable files, which provides the ultimate level of
 flexibility on UNIX to compose existing tools.</dd>
@@ -198,11 +198,11 @@ in scenarios where you have a large complex build system that runs in a
 shared environment. Also, depending on the target, other caching
 mechanisms like content hashing may be more suitable. There are
 <a href="http://blog.jgc.org/2006/04/rebuilding-when-hash-has-changed-not.html">attempts</a>
-to get around this handicap, but none that work well. <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> leaves
+to get around this handicap, but none that work well. <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> leaves
 conditional execution up to the Rule.</dd>
 <dt> <code>Recursiveness</code></dt><dd>Recursive make is generally a mistake. Whole papers have been <a href="http://aegis.sourceforge.net/auug97.pdf">written
 about this topic</a>. Because of
-<a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a>'s design, you can execute <code>walk</code> from any directory, and always get
+<a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a>'s design, you can execute <code>walk</code> from any directory, and always get
 the same result. Recursiveness comes for free.</dd>
 </dl>
 
@@ -227,10 +227,10 @@ the same result. Recursiveness comes for free.</dd>
 <pre><code>$ walk
 </code></pre>
 
-<p>Here's what happens within <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> when we execute this:</p>
+<p>Here's what happens within <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> when we execute this:</p>
 
 <ol>
-<li><p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> resolves all of the dependencies, and builds a graph:</p>
+<li><p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> resolves all of the dependencies, and builds a graph:</p>
 
 <pre><code> $ Walkfile deps all
  hello
@@ -242,7 +242,7 @@ the same result. Recursiveness comes for free.</dd>
  $ Walkfile deps hello.c
  $ Walkfile deps hello.h
 </code></pre></li>
-<li><p><a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> executes all of the targets, starting with dependencies:</p>
+<li><p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> executes all of the targets, starting with dependencies:</p>
 
 <pre><code> $ Walkfile exec hello.c
  $ Walkfile exec hello.h
@@ -273,7 +273,7 @@ $ cd .. &amp;&amp; walk test/111-compile/hello.o
 
 <h2 id="SIGNALS">SIGNALS</h2>
 
-<p>When <a class="man-ref" href="http://ejholmes.io/walk">walk<span class="s">(1)</span></a> receives SIGINT or SIGTERM, it will forward these signals down to
+<p>When <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> receives SIGINT or SIGTERM, it will forward these signals down to
 any targets that are currently executing. With that in mind, it's a good idea to
 ensure that any potentially long running targets handle these signals to
 terminate gracefully.</p>

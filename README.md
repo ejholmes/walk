@@ -1,4 +1,4 @@
-# [Walk](http://ejholmes.io/walk/)
+# [Walk](http://ejholmes.github.io/walk/)
 
 [![Build Status](https://travis-ci.org/ejholmes/walk.svg?branch=master)](https://travis-ci.org/ejholmes/walk)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ejholmes/walk)](https://goreportcard.com/report/github.com/ejholmes/walk)
@@ -132,4 +132,4 @@ ok	all
 
 And that's basically all you need to know about `walk`. Walkfile's can be written in any language you want, as long as they adhere to this very simple contract. No complicated, restrictive syntax to learn!
 
-See also [`man walk`](http://ejholmes.io/walk/).
+See also [`man walk`](http://ejholmes.github.io/walk/).

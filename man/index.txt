@@ -1,4 +1,4 @@
 # external manuals
-walk(1)     http://ejholmes.io/walk
+walk(1)     http://ejholmes.github.io/walk
 make(1)     http://man.cx/make(1)
 bash(1)     http://man.cx/bash(1)
