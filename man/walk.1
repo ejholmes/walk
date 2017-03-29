@@ -18,7 +18,7 @@
 walk(1) is a small utility that can be used to execute tasks, or build programs from source\. It\'s similar to make(1) in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
 .
 .P
-At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, etc\. walk(1) provides a generic primitive to express a DAG as a set of targets (files) that depend on each other\.
+At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, init systems \fIhttps://www\.freedesktop\.org/wiki/Software/systemd/\fR and more\. walk(1) provides a generic primitive to express a DAG as a set of targets (files) that depend on each other\.
 .
 .P
 walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css, sass, coffeescript, etc) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it\'s dependencies can be built\.

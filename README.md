@@ -128,8 +128,6 @@ ok	prog
 ok	all
 ```
 
-`walk` always executes a Walkfile in the same directory as the target. So if you specified a target name like `src/hello.o`, then `walk` will execute a Walkfile in the `src` directory. This allows for uniform execution, so that `walk` can be executed from any directory, and always get the same result. This also makes it easy to build up increasingly complex build systems, by composing targets in subdirectories, which is very difficult to do with make(1).
-
-And that's basically all you need to know about `walk`. Walkfile's can be written in any language you want, as long as they adhere to this very simple contract. No complicated, restrictive syntax to learn!
+And that's it. Wait, that's it? That's it. `walk` is quite simply, just syntactic sugar over executing a binary as a graph.
 
 See also [`man walk`](http://ejholmes.github.io/walk/).

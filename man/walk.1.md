@@ -18,7 +18,8 @@ magical data structure that allow you to easily express dependency trees.
 You'll find DAG's everywhere; in
 [git](http://eagain.net/articles/git-for-computer-scientists/), languages,
 [infrastructure tools](https://github.com/hashicorp/terraform/tree/master/dag),
-etc. walk(1) provides a generic primitive to express a DAG as a set of targets
+[init systems](https://www.freedesktop.org/wiki/Software/systemd/) and more.
+walk(1) provides a generic primitive to express a DAG as a set of targets
 (files) that depend on each other.
 
 walk(1) can be used to build just about anything, from C/C++ programs to
