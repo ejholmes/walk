@@ -79,18 +79,6 @@ it with the following positional arguments:
 It's up to the `Walkfile` to determine what dependencies the target has, and
 how to execute it.
 
-It's generally a good practice to make the Walkfile return an error if it
-doesn't know how to build a target, to prevent typos in targets.
-
-    #!/bin/bash
-
-    phase=$1
-    target=$2
-
-    case $target in
-      *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
-    esac
-
 ## PHASES
 
 walk(1) has two phases:
@@ -126,7 +114,7 @@ walk(1) may be better in certain scenarios:
     mechanisms like content hashing may be more suitable. There are
     [attempts](http://blog.jgc.org/2006/04/rebuilding-when-hash-has-changed-not.html)
     to get around this handicap, but none that work well. walk(1) leaves
-    conditional execution up to the Rule.
+    conditional execution up to the Walkfile.
    * `Recursiveness`:
     Recursive make is generally a mistake. Whole papers have been [written
     about this topic](http://aegis.sourceforge.net/auug97.pdf). Because of

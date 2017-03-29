@@ -64,26 +64,6 @@ The name of the target to build (e\.g\. \fBhello\.o\fR)\.
 .P
 It\'s up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\.
 .
-.P
-It\'s generally a good practice to make the Walkfile return an error if it doesn\'t know how to build a target, to prevent typos in targets\.
-.
-.IP "" 4
-.
-.nf
-
-#!/bin/bash
-
-phase=$1
-target=$2
-
-case $target in
-  *) >&2 echo "No rule for target \e"$target\e"" && exit 1 ;;
-esac
-.
-.fi
-.
-.IP "" 0
-.
 .SH "PHASES"
 walk(1) has two phases:
 .
@@ -104,7 +84,7 @@ walk(1) does not have anything synonymous with make(1)\'s Makefile \fIhttps://ww
 .
 .TP
 \fBConditional Execution\fR
-For mostly legacy reasons, make(1) determines whether a target needs to be built based on the file modification time of its dependencies\. While this works well for building C/C++ programs on a local machine, it breaks down in scenarios where you have a large complex build system that runs in a shared environment\. Also, depending on the target, other caching mechanisms like content hashing may be more suitable\. There are attempts \fIhttp://blog\.jgc\.org/2006/04/rebuilding\-when\-hash\-has\-changed\-not\.html\fR to get around this handicap, but none that work well\. walk(1) leaves conditional execution up to the Rule\.
+For mostly legacy reasons, make(1) determines whether a target needs to be built based on the file modification time of its dependencies\. While this works well for building C/C++ programs on a local machine, it breaks down in scenarios where you have a large complex build system that runs in a shared environment\. Also, depending on the target, other caching mechanisms like content hashing may be more suitable\. There are attempts \fIhttp://blog\.jgc\.org/2006/04/rebuilding\-when\-hash\-has\-changed\-not\.html\fR to get around this handicap, but none that work well\. walk(1) leaves conditional execution up to the Walkfile\.
 .
 .TP
 \fBRecursiveness\fR
