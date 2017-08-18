@@ -34,10 +34,10 @@ func main() {
 	flag.Usage = usage
 	var (
 		version     = flag.Bool("version", false, "Print the version of walk and exit.")
-		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from rules when executing the %s phase.", PhaseExec))
-		noprefix    = flag.Bool("noprefix", false, "Disables the prefixing of stdout/stderr from rules with the name of the target.")
-		concurrency = flag.Uint("j", 0, "The number of targets that are executed in parallel.")
-		print       = flag.String("p", "", "Print the graph that will be executed and exit.")
+		verbose     = flag.Bool("v", false, fmt.Sprintf("Show stdout from the Walkfile when executing the %s phase.", PhaseExec))
+		noprefix    = flag.Bool("noprefix", false, "By default, the stdout/stderr output from the Walkfile is prefixed with the name of the target, followed by a tab character. This flag disables the prefixing. This can help with performance, or issues where you encounter \"too many open files\", since prefixing necessitates more file descriptors.")
+		concurrency = flag.Uint("j", 0, "Controls the number of targets that are executed in parallel. By default, targets are executed with the maximum level of parallelism that the graph allows. To limit the number of targets that are executed in parallel, set this to a value greater than 1. To execute targets serially, set this to 1.")
+		print       = flag.String("p", "", "Prints the underlying DAG to stdout, using the provided format. Available formats are \"dot\" and \"plain\".")
 	)
 	flag.Parse()
 
