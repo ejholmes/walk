@@ -5,6 +5,7 @@
 **Improvements**
 
 * The `-d` flag has been removed, and a `plain` format has been added to `-p`. [383c9e5](https://github.com/ejholmes/walk/commit/383c9e5d296c8f372194a27e241a62e242c16b17)
+* The help text has been expanded to match the man page more closely. [0292d61](https://github.com/ejholmes/walk/commit/0292d61ae8015149c190a5591f78d2abea22d9e6)
 
 ## 0.3.1 (2017-01-23)
 
