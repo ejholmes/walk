@@ -28,8 +28,6 @@ $ go get -u github.com/ejholmes/walk
 
 Or grab the latest release from https://github.com/ejholmes/walk/releases.
 
-**NOTE**: `walk` is currently not considered stable, and there may be breaking changes before the 1.0 release.
-
 ## Usage
 
 `walk` is built on top of a very simple concept; when you want to build a target, `walk` executes a file called `Walkfile` to determine:
