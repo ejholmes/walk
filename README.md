@@ -94,11 +94,9 @@ When you execute `walk all`, the following happens internally:
     main.o
     $ Walkfile deps parse.o
     parse.c
-    parse.h
     $ Walkfile deps main.o
     main.c
     $ Walkfile deps parse.c
-    $ Walkfile deps parse.h
     $ Walkfile deps main.c
     ```
 
@@ -106,7 +104,6 @@ When you execute `walk all`, the following happens internally:
 
     ```console
     $ Walkfile exec parse.c
-    $ Walkfile exec parse.h
     $ Walkfile exec main.c
     $ Walkfile exec main.o
     $ Walkfile exec parse.o
@@ -124,6 +121,20 @@ ok	parse.o
 ok	main.o
 ok	prog
 ok	all
+```
+
+3. We can print the dependency graph to verify that our dependency chain is what we expect:
+
+```console
+$ walk -p dot
+digraph {
+  "(root)" -> "all"
+  "all" -> "prog"
+  "prog" -> "main.o"
+  "prog" -> "parse.o"
+  "parse.o" -> "parse.c"
+  "main.o" -> "main.c"
+}
 ```
 
 And that's it. Wait, that's it? That's it. `walk` is quite simply, just syntactic sugar over executing a binary as a graph.
