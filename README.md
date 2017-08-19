@@ -123,7 +123,7 @@ ok	prog
 ok	all
 ```
 
-3. We can print the dependency graph to verify that our dependency chain is what we expect:
+We can print the dependency graph to verify that our dependency chain is what we expect:
 
 ```console
 $ walk -p dot
