@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.3 (2017-09-20)
+
+**Improvements**
+
+* Dependencies specified as an absolute path are now handled properly. [ee548bf](https://github.com/ejholmes/walk/commit/ee548bf5f2cf7fc97fad77c710b27929b327833f)
+
 ## 0.3.2 (2017-08-18)
 
 **Improvements**
