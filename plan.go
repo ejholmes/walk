@@ -309,8 +309,14 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 		if path == "" {
 			continue
 		}
+
+		// If the path is not already and absolute path, make it one.
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(t.dir, path)
+		}
+
 		// Make all paths relative to the working directory.
-		path, err := filepath.Rel(t.wd, filepath.Join(t.dir, scanner.Text()))
+		path, err := filepath.Rel(t.wd, path)
 		if err != nil {
 			return deps, err
 		}

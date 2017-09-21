@@ -11,7 +11,8 @@ case $target in
   all)
     case $phase in
       deps)
-        echo hello
+        # Absolute paths work too.
+        echo $PWD/hello
         echo test
         ;;
     esac ;;
