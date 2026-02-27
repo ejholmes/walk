@@ -1,13 +1,5 @@
 # Changelog
 
-## Unreleased
-
-**Improvements**
-
-* Upgraded to Go 1.23 with Go modules, replacing the vendored dependencies.
-* Migrated CI from Travis CI to GitHub Actions.
-* Updated installation instructions to use `go install`.
-
 ## 0.3.3 (2017-09-20)
 
 **Improvements**
