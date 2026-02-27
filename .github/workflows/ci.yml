@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}/go
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.7"
+      - uses: actions/checkout@v4
+        with:
+          path: go/src/github.com/ejholmes/walk
+      - run: go install .
+        working-directory: go/src/github.com/ejholmes/walk
+      - run: walk -v test/unit
+        working-directory: go/src/github.com/ejholmes/walk
+
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}/go
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.7"
+      - uses: actions/checkout@v4
+        with:
+          path: go/src/github.com/ejholmes/walk
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7"
+          bundler-cache: true
+          working-directory: go/src/github.com/ejholmes/walk
+      - run: go install .
+        working-directory: go/src/github.com/ejholmes/walk
+      - run: walk -v test/integration
+        working-directory: go/src/github.com/ejholmes/walk

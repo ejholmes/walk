@@ -1,6 +1,6 @@
 # [Walk](http://ejholmes.github.io/walk/)
 
-[![Build Status](https://travis-ci.org/ejholmes/walk.svg?branch=master)](https://travis-ci.org/ejholmes/walk)
+[![CI](https://github.com/ejholmes/walk/actions/workflows/ci.yml/badge.svg)](https://github.com/ejholmes/walk/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ejholmes/walk)](https://goreportcard.com/report/github.com/ejholmes/walk)
 [![Latest Version](https://img.shields.io/github/release/ejholmes/walk.svg?style=flat?maxAge=86400)](https://github.com/ejholmes/walk/releases)
 
