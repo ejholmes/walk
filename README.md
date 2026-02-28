@@ -20,10 +20,10 @@ Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https:
 
 ## Installation
 
-Using Go 1.7+:
+Using Go 1.23+:
 
 ```console
-$ go get -u github.com/ejholmes/walk
+$ go install github.com/ejholmes/walk@latest
 ```
 
 Or grab the latest release from https://github.com/ejholmes/walk/releases.

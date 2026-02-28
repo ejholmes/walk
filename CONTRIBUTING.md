@@ -2,7 +2,7 @@
 
 ## Development
 
-walk(1) is written in Go, and it's assumed that you have a working Go 1.7+ environment.
+walk(1) is written in Go, and requires Go 1.23+.
 
 ## Tests
 
