@@ -4,6 +4,16 @@
 
 walk(1) is written in Go, and requires Go 1.23+.
 
+### Using devbox (recommended)
+
+The easiest way to set up your development environment is with [devbox](https://www.jetify.com/devbox):
+
+```console
+$ devbox shell
+```
+
+This will provide Go, Ruby, and GCC with the correct versions.
+
 ## Tests
 
 There are multiple test suites that are exercised. The full suite requires that walk is installed:

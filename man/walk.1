@@ -1,102 +1,71 @@
-.\" generated with Ronn/v0.7.3
-.\" http://github.com/rtomayko/ronn/tree/0.7.3
-.
-.TH "WALK" "1" "August 2017" "" ""
-.
+.\" generated with Ronn-NG/v0.10.1
+.\" http://github.com/apjanke/ronn-ng/tree/0.10.1
+.TH "WALK" "1" "January 1980" ""
 .SH "NAME"
 \fBwalk\fR \- A fast, general purpose, graph based build and task execution utility\.
-.
 .SH "SYNOPSIS"
 \fBwalk\fR \fB\-\-help\fR
-.
 .br
-\fBwalk\fR [\fB\-v\fR] [target\.\.\.]
-.
+\fBwalk\fR [\fB\-v\fR] [target\|\.\|\.\|\.]
 .br
-.
 .SH "DESCRIPTION"
-walk(1) is a small utility that can be used to execute tasks, or build programs from source\. It\'s similar to make(1) in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
-.
+walk(1) is a small utility that can be used to execute tasks, or build programs from source\. It's similar to make(1) in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
 .P
-At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG\'s are a magical data structure that allow you to easily express dependency trees\. You\'ll find DAG\'s everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, init systems \fIhttps://www\.freedesktop\.org/wiki/Software/systemd/\fR and more\. walk(1) provides a generic primitive to express a DAG as a set of targets (files) that depend on each other\.
-.
+At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG's are a magical data structure that allow you to easily express dependency trees\. You'll find DAG's everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, init systems \fIhttps://www\.freedesktop\.org/wiki/Software/systemd/\fR and more\. walk(1) provides a generic primitive to express a DAG as a set of targets (files) that depend on each other\.
 .P
-walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css, sass, coffeescript, etc) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it\'s dependencies can be built\.
-.
+walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css, sass, coffeescript, etc) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it's dependencies can be built\.
 .SH "OPTIONS"
-.
 .TP
 \fB\-v\fR
 Show stdout from the \fBWalkfile\fR when executing the \fBexec\fR phase\.
-.
 .TP
 \fB\-j\fR=\fInumber\fR
 Controls the number of targets that are executed in parallel\. By default, targets are executed with the maximum level of parallelism that the graph allows\. To limit the number of targets that are executed in parallel, set this to a value greater than \fB1\fR\. To execute targets serially, set this to \fB1\fR\.
-.
 .TP
 \fB\-p\fR=\fIformat\fR
 Prints the underlying DAG to stdout, using the provided format\. Available formats are \fBdot\fR and \fBplain\fR\.
-.
 .TP
 \fB\-\-noprefix\fR
 By default, the stdout/stderr output from the \fBWalkfile\fR is prefixed with the name of the target, followed by a tab character\. This flag disables the prefixing\. This can help with performance, or issues where you encounter "too many open files", since prefixing necessitates more file descriptors\.
-.
 .SH "TARGETS"
-Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it\'s synonymous with \fB\.PHONY\fR targets in make(1)\.
-.
+Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it's synonymous with \fB\.PHONY\fR targets in make(1)\.
 .P
 walk(1) delegates to an executable file called \fIWalkfile\fR within the same directory as the target, to determine what dependencies the target has, and how to execute it\.
-.
 .SH "WALKFILE"
 The \fBWalkfile\fR determines \fIhow\fR a target is executed, and what other targets it depends on\.
-.
 .P
 When walk(1) begins execution of a target, it attempts to find an executable file called \fBWalkfile\fR in the same directory as the target, and then executes it with the following positional arguments:
-.
 .TP
 \fB$1\fR
 The \fIphase\fR (\fBdeps\fR or \fBexec\fR)\.
-.
 .TP
 \fB$2\fR
 The name of the target to build (e\.g\. \fBhello\.o\fR)\.
-.
 .P
-It\'s up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\.
-.
+It's up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\.
 .SH "PHASES"
 walk(1) has two phases:
-.
 .TP
 \fBPlan\fR
 In this phase, walk(1) executes the \fBWalkfile\fR with \fBdeps\fR as the first argument\. The \fBWalkfile\fR is expected to print a newline delimited list of files that the target depends on, relative to the target\. Internally, walk(1) builds a graph of all of the targets and their dependencies\.
-.
 .TP
 \fBExec\fR
-In this phase, walk(1) executes the \fBWalkfile\fR with \fBexec\fR as the first argument\. The \fBWalkfile\fR is expected to build the given target, but don\'t need to if it\'s, for example, a task (like \fBtest\fR, \fBclean\fR, etc)\.
-.
+In this phase, walk(1) executes the \fBWalkfile\fR with \fBexec\fR as the first argument\. The \fBWalkfile\fR is expected to build the given target, but don't need to if it's, for example, a task (like \fBtest\fR, \fBclean\fR, etc)\.
 .SH "COMPARISONS"
 walk(1) is heavily inspired by make(1) and redo \fIhttps://github\.com/apenwarr/redo\fR\. There are a number of reasons why walk(1) may be better in certain scenarios:
-.
 .TP
 \fBSimplicity\fR
-walk(1) does not have anything synonymous with make(1)\'s Makefile \fIhttps://www\.gnu\.org/software/make/manual/make\.html\fR\. Everything is simply defined as executable files, which provides the ultimate level of flexibility on UNIX to compose existing tools\.
-.
+walk(1) does not have anything synonymous with make(1)'s Makefile \fIhttps://www\.gnu\.org/software/make/manual/make\.html\fR\. Everything is simply defined as executable files, which provides the ultimate level of flexibility on UNIX to compose existing tools\.
 .TP
 \fBConditional Execution\fR
 For mostly legacy reasons, make(1) determines whether a target needs to be built based on the file modification time of its dependencies\. While this works well for building C/C++ programs on a local machine, it breaks down in scenarios where you have a large complex build system that runs in a shared environment\. Also, depending on the target, other caching mechanisms like content hashing may be more suitable\. There are attempts \fIhttp://blog\.jgc\.org/2006/04/rebuilding\-when\-hash\-has\-changed\-not\.html\fR to get around this handicap, but none that work well\. walk(1) leaves conditional execution up to the Walkfile\.
-.
 .TP
 \fBRecursiveness\fR
-Recursive make is generally a mistake\. Whole papers have been written about this topic \fIhttp://aegis\.sourceforge\.net/auug97\.pdf\fR\. Because of walk(1)\'s design, you can execute \fBwalk\fR from any directory, and always get the same result\. Recursiveness comes for free\.
-.
+Recursive make is generally a mistake\. Whole papers have been written about this topic \fIhttp://aegis\.sourceforge\.net/auug97\.pdf\fR\. Because of walk(1)'s design, you can execute \fBwalk\fR from any directory, and always get the same result\. Recursiveness comes for free\.
 .SH "EXAMPLES"
-For the following examples, we\'ll assume that we want to build a program called hello \fIhttps://github\.com/ejholmes/walk/tree/master/test/111\-compile\fR from \fBhello\.c\fR and \fBhello\.h\fR\. This can be expressed as a DAG, like the following:
-.
+For the following examples, we'll assume that we want to build a program called hello \fIhttps://github\.com/ejholmes/walk/tree/master/test/111\-compile\fR from \fBhello\.c\fR and \fBhello\.h\fR\. This can be expressed as a DAG, like the following:
 .IP "" 4
-.
 .nf
-
                 all
                  |
                hello
@@ -104,34 +73,21 @@ For the following examples, we\'ll assume that we want to build a program called
               hello\.o
               /     \e
           hello\.c hello\.h
-.
 .fi
-.
 .IP "" 0
-.
 .P
 When \fBwalk\fR is invoked without any arguments, it defaults to a target called \fBall\fR:
-.
 .IP "" 4
-.
 .nf
-
 $ walk
-.
 .fi
-.
 .IP "" 0
-.
 .P
-Here\'s what happens within walk(1) when we execute this:
-.
+Here's what happens within walk(1) when we execute this:
 .IP "1." 4
 walk(1) resolves all of the dependencies, and builds a graph:
-.
 .IP "" 4
-.
 .nf
-
  $ Walkfile deps all
  hello
  $ Walkfile deps hello
@@ -141,71 +97,45 @@ walk(1) resolves all of the dependencies, and builds a graph:
  hello\.h
  $ Walkfile deps hello\.c
  $ Walkfile deps hello\.h
-.
 .fi
-.
 .IP "" 0
 
-.
 .IP "2." 4
 walk(1) executes all of the targets, starting with dependencies:
-.
 .IP "" 4
-.
 .nf
-
  $ Walkfile exec hello\.c
  $ Walkfile exec hello\.h
  $ Walkfile exec hello\.o
  $ Walkfile exec hello
  $ Walkfile exec all
-.
 .fi
-.
 .IP "" 0
 
-.
 .IP "" 0
-.
 .P
-You can provide one or more targets as arguments to specify where to start execution from\. For example, if wanted to build just \fBhello\.o\fR and any of it\'s dependencies:
-.
+You can provide one or more targets as arguments to specify where to start execution from\. For example, if wanted to build just \fBhello\.o\fR and any of it's dependencies:
 .IP "" 4
-.
 .nf
-
 $ walk hello\.o
-.
 .fi
-.
 .IP "" 0
-.
 .P
-When targets are executed, they\'re always executed relative to the directory of the target\. This means that we can execute \fBwalk\fR from any directory, and always get the same behavior\. All of the following are identical:
-.
+When targets are executed, they're always executed relative to the directory of the target\. This means that we can execute \fBwalk\fR from any directory, and always get the same behavior\. All of the following are identical:
 .IP "" 4
-.
 .nf
-
 $ walk hello\.o
 $ cd \.\. && walk 111\-compile/hello\.o
 $ cd \.\. && walk test/111\-compile/hello\.o
-.
 .fi
-.
 .IP "" 0
-.
 .P
 See more at \fIhttps://github\.com/ejholmes/walk/tree/master/test\fR\.
-.
 .SH "SIGNALS"
-When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to any targets that are currently executing\. With that in mind, it\'s a good idea to ensure that any potentially long running targets handle these signals to terminate gracefully\.
-.
+When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to any targets that are currently executing\. With that in mind, it's a good idea to ensure that any potentially long running targets handle these signals to terminate gracefully\.
 .SH "BUGS"
 You can find a list of bugs at \fIhttps://github\.com/ejholmes/walk/issues\fR\. Please report any issues there\.
-.
 .SH "COPYRIGHT"
 Walk is Copyright (C) 2017 Eric Holmes
-.
 .SH "SEE ALSO"
 make(1), bash(1)
