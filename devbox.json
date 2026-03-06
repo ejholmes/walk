@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.16.0/.schema/devbox.schema.json",
+  "packages": [
+    "go@1.23",
+    "ruby@2.7",
+    "gcc@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "export PATH=\"$(go env GOPATH)/bin:$PATH\""
+    ]
+  }
+}

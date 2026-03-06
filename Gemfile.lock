@@ -1,13 +1,22 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    hpricot (0.8.6)
+    kramdown (2.5.2)
+      rexml (>= 3.4.4)
+    kramdown-parser-gfm (1.1.0)
+      kramdown (~> 2.0)
+    mini_portile2 (2.8.9)
     mustache (1.0.3)
-    rdiscount (2.2.0.1)
-    ronn (0.7.3)
-      hpricot (>= 0.8.2)
-      mustache (>= 0.7.0)
-      rdiscount (>= 1.5.8)
+    nokogiri (1.15.7)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
+    racc (1.8.1)
+    rexml (3.4.4)
+    ronn-ng (0.10.1)
+      kramdown (~> 2, >= 2.1)
+      kramdown-parser-gfm (~> 1, >= 1.0.1)
+      mustache (~> 1)
+      nokogiri (~> 1, >= 1.14.3)
     sass (3.4.22)
 
 PLATFORMS
@@ -15,8 +24,8 @@ PLATFORMS
 
 DEPENDENCIES
   mustache (= 1.0.3)
-  ronn
+  ronn-ng
   sass (= 3.4.22)
 
 BUNDLED WITH
-   1.14.5
+   2.1.4
