@@ -101,7 +101,24 @@ EOF
       exec) exec bundle install ;
     esac ;;
 
-  bin|test|docs|man|dist)
+  # docs/* targets handled here via Walkfile inheritance
+  docs)
+    case $phase in
+      deps) echo docs/all ;;
+    esac ;;
+
+  docs/all)
+    case $phase in
+      deps) echo docs/index.html ;;
+    esac ;;
+
+  docs/index.html)
+    case $phase in
+      deps) echo man/walk.1.html ;;
+      exec) cp man/walk.1.html $target ;;
+    esac ;;
+
+  bin|test|man|dist)
     case $phase in
       deps) echo $target/all ;;
     esac ;;
