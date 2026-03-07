@@ -40,5 +40,17 @@ case $target in
       exec) exec go test -race ../...
     esac ;;
 
+  # Generic rule: compile any .c file to .o
+  # This is inherited by subdirectories via exit 200
+  */*.o)
+    src=${target%.o}.c
+    case $phase in
+      deps) echo $src ;;
+      exec) exec gcc -Wall -o $target -c $src ;;
+    esac ;;
+
+  # Static files - no build needed
+  */*.c|*/*.h) ;;
+
   *) >&2 echo "No rule for target \"$target\"" && exit 1 ;;
 esac

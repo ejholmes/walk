@@ -22,15 +22,14 @@ case $target in
       exec) clean ;;
     esac ;;
 
-  hello.o)
-    case $phase in
-      deps) echo hello.c ;;
-      exec) exec gcc -Wall -o hello.o -c $($0 deps $target) ;;
-    esac ;;
+  test) ;; # phony target
 
   hello)
     case $phase in
       deps) echo hello.o ;;
       exec) exec gcc -Wall -o hello $($0 deps $target) ;;
-    esac
+    esac ;;
+
+  # Delegate unknown targets (like *.o) to parent Walkfile
+  *) exit 200 ;;
 esac
