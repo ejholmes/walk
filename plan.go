@@ -238,6 +238,10 @@ type target struct {
 	// build file.
 	dir string
 
+	// targetName is the target name relative to the Walkfile's directory.
+	// This is passed as $2 to the Walkfile.
+	targetName string
+
 	// The working directory.
 	wd string
 
@@ -251,16 +255,21 @@ func newTarget(wd, name string) *target {
 	rulefile := RuleFile(path)
 
 	var dir string
+	var targetName string
 	if rulefile != "" {
-		dir = filepath.Dir(path)
+		// Use the Walkfile's directory as the working directory
+		dir = filepath.Dir(rulefile)
+		// Compute target name relative to the Walkfile's directory
+		targetName, _ = filepath.Rel(dir, path)
 	}
 
 	return &target{
-		name:     name,
-		path:     path,
-		rulefile: rulefile,
-		dir:      dir,
-		wd:       wd,
+		name:       name,
+		path:       path,
+		rulefile:   rulefile,
+		dir:        dir,
+		targetName: targetName,
+		wd:         wd,
 	}
 }
 
@@ -327,8 +336,7 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 }
 
 func (t *target) ruleCommand(ctx context.Context, phase string) (*exec.Cmd, error) {
-	name := filepath.Base(t.path)
-	cmd := exec.CommandContext(ctx, t.rulefile, phase, name)
+	cmd := exec.CommandContext(ctx, t.rulefile, phase, t.targetName)
 	cmd.Stdout = t.stdout
 	cmd.Stderr = t.stderr
 	cmd.Dir = t.dir
@@ -363,20 +371,22 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 }
 
 // RuleFile is used to determine the path to an executable which will be used as
-// the Rule to execute the given target. At the moment, this simply looks for an
-// executable file called `Walkfile` in the same directory as the target.
+// the Rule to execute the given target. It walks up the directory tree from the
+// target's directory until it finds a Walkfile.
 func RuleFile(path string) string {
 	dir := filepath.Dir(path)
-	try := []string{
-		Walkfile,
-	}
 
-	for _, n := range try {
-		path := filepath.Join(dir, n)
-		_, err := os.Stat(path)
-		if err == nil {
-			return path
+	for {
+		walkfile := filepath.Join(dir, Walkfile)
+		if _, err := os.Stat(walkfile); err == nil {
+			return walkfile
 		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
 	}
 
 	return ""

@@ -36,7 +36,7 @@ Create an executable file called `Walkfile`:
 #!/bin/bash
 
 phase=$1   # "deps" or "exec"
-target=$2  # the target name
+target=$2  # the target path (relative to the Walkfile)
 
 case $target in
   hello)

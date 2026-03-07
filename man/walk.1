@@ -33,17 +33,17 @@ By default, the stdout/stderr output from the \fBWalkfile\fR is prefixed with th
 .SH "TARGETS"
 Targets can be used to represent a task, or a file that needs to be built\. They are synonymous with targets in make(1)\. In general, targets are relative paths to files that need to be built, like \fBsrc/hello\.o\fR\. When a target does not relate to an actual file on disk, it's synonymous with \fB\.PHONY\fR targets in make(1)\.
 .P
-walk(1) delegates to an executable file called \fIWalkfile\fR within the same directory as the target, to determine what dependencies the target has, and how to execute it\.
+walk(1) delegates to an executable file called \fIWalkfile\fR to determine what dependencies the target has, and how to execute it\. walk(1) searches for a Walkfile starting from the target's directory and walking up the directory tree until one is found\. This allows a single Walkfile at the project root to handle targets in any subdirectory\.
 .SH "WALKFILE"
 The \fBWalkfile\fR determines \fIhow\fR a target is executed, and what other targets it depends on\.
 .P
-When walk(1) begins execution of a target, it attempts to find an executable file called \fBWalkfile\fR in the same directory as the target, and then executes it with the following positional arguments:
+When walk(1) begins execution of a target, it searches for an executable file called \fBWalkfile\fR starting from the target's directory and walking up the directory tree\. Once found, it executes the Walkfile with the following positional arguments:
 .TP
 \fB$1\fR
 The \fIphase\fR (\fBdeps\fR or \fBexec\fR)\.
 .TP
 \fB$2\fR
-The name of the target to build (e\.g\. \fBhello\.o\fR)\.
+The target path relative to the Walkfile's directory (e\.g\. \fBhello\.o\fR or \fBsubdir/hello\.o\fR if the Walkfile is in a parent directory)\.
 .P
 It's up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\.
 .SH "PHASES"

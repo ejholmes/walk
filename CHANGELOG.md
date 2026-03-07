@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+**Features**
+
+* Walkfile inheritance: walk(1) now searches up the directory tree for a Walkfile, allowing a single Walkfile at the project root to handle targets in any subdirectory. The target name passed to the Walkfile (`$2`) is now the path relative to the Walkfile's directory.
+
 ## 0.3.3 (2017-09-20)
 
 **Improvements**

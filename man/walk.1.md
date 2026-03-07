@@ -60,24 +60,28 @@ to files that need to be built, like `src/hello.o`. When a target does not
 relate to an actual file on disk, it's synonymous with `.PHONY` targets in
 make(1).
 
-walk(1) delegates to an executable file called [Walkfile][WALKFILE] within the same
-directory as the target, to determine what dependencies the target has, and how
-to execute it.
+walk(1) delegates to an executable file called [Walkfile][WALKFILE] to determine
+what dependencies the target has, and how to execute it. walk(1) searches for a
+Walkfile starting from the target's directory and walking up the directory tree
+until one is found. This allows a single Walkfile at the project root to handle
+targets in any subdirectory.
 
 ## WALKFILE
 
 The `Walkfile` determines _how_ a target is executed, and what other targets it
 depends on.
 
-When walk(1) begins execution of a target, it attempts to find an executable
-file called `Walkfile` in the same directory as the target, and then executes
-it with the following positional arguments:
+When walk(1) begins execution of a target, it searches for an executable file
+called `Walkfile` starting from the target's directory and walking up the
+directory tree. Once found, it executes the Walkfile with the following
+positional arguments:
 
   * `$1`:
     The [phase][PHASES] (`deps` or `exec`).
-  
+
   * `$2`:
-    The name of the target to build (e.g. `hello.o`).
+    The target path relative to the Walkfile's directory (e.g. `hello.o` or
+    `subdir/hello.o` if the Walkfile is in a parent directory).
 
 It's up to the `Walkfile` to determine what dependencies the target has, and
 how to execute it.
