@@ -221,6 +221,10 @@ func (e *targetError) Error() string {
 	return fmt.Sprintf("%s: %v", e.target.Name(), e.err)
 }
 
+// ExitCodeDelegate is the exit code that signals walk to try the next
+// Walkfile in the inheritance chain.
+const ExitCodeDelegate = 200
+
 // target is a Target implementation, that represents a file on disk, which may
 // be built by a rule.
 type target struct {
@@ -230,13 +234,14 @@ type target struct {
 	// The absolute path to the file.
 	path string
 
-	// path to the rulefile to use. This is determined by the RuleFile
-	// function.
-	rulefile string
+	// rulefiles is the list of candidate Walkfiles, ordered from most
+	// specific (closest to target) to least specific (furthest up the tree).
+	rulefiles []string
 
-	// the directory to use as the working directory when executing the
-	// build file.
-	dir string
+	// rulefileIdx is the index into rulefiles of the active Walkfile.
+	// This is set during Dependencies() when a Walkfile successfully handles
+	// the target (doesn't return ExitCodeDelegate).
+	rulefileIdx int
 
 	// The working directory.
 	wd string
@@ -247,21 +252,39 @@ type target struct {
 // newTarget initializes and returns a new target instance.
 func newTarget(wd, name string) *target {
 	path := abs(wd, name)
-
-	rulefile := RuleFile(path)
-
-	var dir string
-	if rulefile != "" {
-		dir = filepath.Dir(path)
-	}
+	rulefiles := RuleFiles(path)
 
 	return &target{
-		name:     name,
-		path:     path,
-		rulefile: rulefile,
-		dir:      dir,
-		wd:       wd,
+		name:      name,
+		path:      path,
+		rulefiles: rulefiles,
+		wd:        wd,
 	}
+}
+
+// rulefile returns the currently active Walkfile path.
+func (t *target) rulefile() string {
+	if len(t.rulefiles) == 0 {
+		return ""
+	}
+	return t.rulefiles[t.rulefileIdx]
+}
+
+// dir returns the working directory for the active Walkfile.
+func (t *target) dir() string {
+	if rf := t.rulefile(); rf != "" {
+		return filepath.Dir(rf)
+	}
+	return ""
+}
+
+// targetName returns the target name relative to the active Walkfile's directory.
+func (t *target) targetName() string {
+	if dir := t.dir(); dir != "" {
+		rel, _ := filepath.Rel(dir, t.path)
+		return rel
+	}
+	return ""
 }
 
 // Name implements the Target interface.
@@ -272,7 +295,7 @@ func (t *target) Name() string {
 // Exec executes the rule with "exec" as the first argument.
 func (t *target) Exec(ctx context.Context) error {
 	// No .walk file, meaning it's a static dependency.
-	if t.rulefile == "" {
+	if t.rulefile() == "" {
 		return nil
 	}
 
@@ -287,51 +310,66 @@ func (t *target) Exec(ctx context.Context) error {
 // out the newline delimited list of dependencies.
 func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 	// No .walk file, meaning it's a static dependency.
-	if t.rulefile == "" {
+	if len(t.rulefiles) == 0 {
 		return nil, nil
 	}
 
-	b := new(bytes.Buffer)
-	cmd, err := t.ruleCommand(ctx, PhaseDeps)
-	if err != nil {
-		return nil, err
-	}
-	cmd.Stdout = b
+	// Try each Walkfile in order until one handles the target
+	// (doesn't return ExitCodeDelegate).
+	var lastErr error
+	for i := range t.rulefiles {
+		t.rulefileIdx = i
 
-	if err := cmd.Run(); err != nil {
-		return nil, err
-	}
-
-	var deps []string
-	scanner := bufio.NewScanner(b)
-	for scanner.Scan() {
-		path := scanner.Text()
-		if path == "" {
-			continue
-		}
-
-		// If the path is not already and absolute path, make it one.
-		if !filepath.IsAbs(path) {
-			path = filepath.Join(t.dir, path)
-		}
-
-		// Make all paths relative to the working directory.
-		path, err := filepath.Rel(t.wd, path)
+		b := new(bytes.Buffer)
+		cmd, err := t.ruleCommand(ctx, PhaseDeps)
 		if err != nil {
-			return deps, err
+			return nil, err
 		}
-		deps = append(deps, path)
+		cmd.Stdout = b
+
+		if err := cmd.Run(); err != nil {
+			// Check if this is a fallback signal
+			if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == ExitCodeDelegate {
+				lastErr = err
+				continue // Try next Walkfile
+			}
+			return nil, err
+		}
+
+		// This Walkfile handled it - parse dependencies
+		var deps []string
+		scanner := bufio.NewScanner(b)
+		for scanner.Scan() {
+			path := scanner.Text()
+			if path == "" {
+				continue
+			}
+
+			// If the path is not already and absolute path, make it one.
+			if !filepath.IsAbs(path) {
+				path = filepath.Join(t.dir(), path)
+			}
+
+			// Make all paths relative to the working directory.
+			path, err := filepath.Rel(t.wd, path)
+			if err != nil {
+				return deps, err
+			}
+			deps = append(deps, path)
+		}
+
+		return deps, scanner.Err()
 	}
 
-	return deps, scanner.Err()
+	// All Walkfiles returned fallback - return the last error
+	return nil, lastErr
 }
 
 func (t *target) ruleCommand(ctx context.Context, phase string) (*exec.Cmd, error) {
-	name := filepath.Base(t.path)
-	cmd := exec.CommandContext(ctx, t.rulefile, phase, name)
+	cmd := exec.CommandContext(ctx, t.rulefile(), phase, t.targetName())
 	cmd.Stdout = t.stdout
 	cmd.Stderr = t.stderr
-	cmd.Dir = t.dir
+	cmd.Dir = t.dir()
 	return cmd, nil
 }
 
@@ -353,7 +391,7 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 	if err != nil {
 		line = fmt.Sprintf("%s\t%s", line, err)
 	}
-	if t.rulefile != "" {
+	if t.rulefile() != "" {
 		fmt.Fprintf(t.stdout, "%s\n", line)
 	}
 	if err != nil {
@@ -363,23 +401,36 @@ func (t *verboseTarget) Exec(ctx context.Context) error {
 }
 
 // RuleFile is used to determine the path to an executable which will be used as
-// the Rule to execute the given target. At the moment, this simply looks for an
-// executable file called `Walkfile` in the same directory as the target.
+// the Rule to execute the given target. It walks up the directory tree from the
+// target's directory until it finds a Walkfile.
 func RuleFile(path string) string {
+	rulefiles := RuleFiles(path)
+	if len(rulefiles) == 0 {
+		return ""
+	}
+	return rulefiles[0]
+}
+
+// RuleFiles returns all candidate Walkfiles for the given target path, ordered
+// from most specific (closest to target) to least specific (furthest ancestor).
+func RuleFiles(path string) []string {
+	var rulefiles []string
 	dir := filepath.Dir(path)
-	try := []string{
-		Walkfile,
-	}
 
-	for _, n := range try {
-		path := filepath.Join(dir, n)
-		_, err := os.Stat(path)
-		if err == nil {
-			return path
+	for {
+		walkfile := filepath.Join(dir, Walkfile)
+		if _, err := os.Stat(walkfile); err == nil {
+			rulefiles = append(rulefiles, walkfile)
 		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
 	}
 
-	return ""
+	return rulefiles
 }
 
 // prefixWriter wraps an io.Writer to append a prefix to each line written.

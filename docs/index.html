@@ -143,24 +143,28 @@ to files that need to be built, like <code>src/hello.o</code>. When a target doe
 relate to an actual file on disk, it's synonymous with <code>.PHONY</code> targets in
 <a class="man-ref" href="http://man.cx/make(1)">make<span class="s">(1)</span></a>.</p>
 
-<p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> delegates to an executable file called <a href="#WALKFILE" title="WALKFILE" data-bare-link="true">Walkfile</a> within the same
-directory as the target, to determine what dependencies the target has, and how
-to execute it.</p>
+<p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> delegates to an executable file called <a href="#WALKFILE" title="WALKFILE" data-bare-link="true">Walkfile</a> to determine
+what dependencies the target has, and how to execute it. <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> searches for a
+Walkfile starting from the target's directory and walking up the directory tree
+until one is found. This allows a single Walkfile at the project root to handle
+targets in any subdirectory.</p>
 
 <h2 id="WALKFILE">WALKFILE</h2>
 
 <p>The <code>Walkfile</code> determines <em>how</em> a target is executed, and what other targets it
 depends on.</p>
 
-<p>When <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it attempts to find an executable
-file called <code>Walkfile</code> in the same directory as the target, and then executes
-it with the following positional arguments:</p>
+<p>When <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> begins execution of a target, it searches for an executable file
+called <code>Walkfile</code> starting from the target's directory and walking up the
+directory tree. Once found, it executes the Walkfile with the following
+positional arguments:</p>
 
 <dl>
 <dt><code>$1</code></dt>
 <dd>The <a href="#PHASES" title="PHASES" data-bare-link="true">phase</a> (<code>deps</code> or <code>exec</code>).</dd>
 <dt><code>$2</code></dt>
-<dd>The name of the target to build (e.g. <code>hello.o</code>).</dd>
+<dd>The target path relative to the Walkfile's directory (e.g. <code>hello.o</code> or
+<code>subdir/hello.o</code> if the Walkfile is in a parent directory).</dd>
 </dl>
 
 <p>It's up to the <code>Walkfile</code> to determine what dependencies the target has, and

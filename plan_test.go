@@ -94,22 +94,27 @@ func TestPlan_Error(t *testing.T) {
 }
 
 func TestPlan_NoWalkfile(t *testing.T) {
-	clean(t)
+	// Use a temp directory that truly has no Walkfile anywhere in its ancestry
+	tmpdir := t.TempDir()
+	targetPath := filepath.Join(tmpdir, "all")
 
 	b := new(bytes.Buffer)
 	plan := newPlan()
 	plan.NewTarget = NewTarget(TargetOptions{
-		Stdout: b,
+		WorkingDir: tmpdir,
+		Stdout:     b,
 	})
-	err := plan.Plan(ctx, "test/000-no-walkfile/all")
+	err := plan.Plan(ctx, "all")
 	assert.NoError(t, err)
 
 	err = plan.Exec(ctx, NewSemaphore(0))
 	assert.NoError(t, err)
 
-	// If there's no Walkfile in the directory, it might just be a static
+	// If there's no Walkfile in the directory (or any parent), it's a static
 	// file. We don't really need to show these in output.
 	assert.Equal(t, "", b.String())
+
+	_ = targetPath // silence unused warning
 }
 
 func TestPrefixWriter(t *testing.T) {
@@ -159,6 +164,178 @@ prefix: and wave myself back in wearily,
 prefix: for who else could I get in my place 
 prefix: to do the job in dark, airless conditions?
 `, b.String())
+}
+
+func TestRuleFile_Inheritance(t *testing.T) {
+	// Create a temp directory structure:
+	// tmpdir/
+	//   Walkfile        <- should be found
+	//   subdir/
+	//     target.txt    <- target here, no local Walkfile
+	tmpdir := t.TempDir()
+
+	walkfile := filepath.Join(tmpdir, "Walkfile")
+	err := os.WriteFile(walkfile, []byte("#!/bin/bash\necho test"), 0755)
+	assert.NoError(t, err)
+
+	subdir := filepath.Join(tmpdir, "subdir")
+	err = os.Mkdir(subdir, 0755)
+	assert.NoError(t, err)
+
+	targetPath := filepath.Join(subdir, "target.txt")
+
+	// RuleFile should find the Walkfile in the parent directory
+	found := RuleFile(targetPath)
+	assert.Equal(t, walkfile, found)
+}
+
+func TestRuleFile_Inheritance_EndToEnd(t *testing.T) {
+	// Create a temp directory structure with a Walkfile that handles subdirectory targets
+	tmpdir := t.TempDir()
+
+	// Walkfile that echoes the target name for deps and creates a marker file on exec
+	walkfile := filepath.Join(tmpdir, "Walkfile")
+	err := os.WriteFile(walkfile, []byte(`#!/bin/bash
+phase=$1
+target=$2
+
+case $phase in
+  deps) ;; # no deps
+  exec) touch "$target.built" ;;
+esac
+`), 0755)
+	assert.NoError(t, err)
+
+	// Create a subdirectory (no Walkfile here - should inherit)
+	subdir := filepath.Join(tmpdir, "subdir")
+	err = os.Mkdir(subdir, 0755)
+	assert.NoError(t, err)
+
+	b := new(bytes.Buffer)
+	plan := newPlan()
+	plan.NewTarget = NewTarget(TargetOptions{
+		WorkingDir: tmpdir,
+		Stdout:     b,
+	})
+
+	// Build a target in the subdirectory
+	err = plan.Plan(ctx, "subdir/foo")
+	assert.NoError(t, err)
+
+	err = plan.Exec(ctx, NewSemaphore(0))
+	assert.NoError(t, err)
+
+	// Verify the Walkfile was invoked and created the marker file
+	_, err = os.Stat(filepath.Join(tmpdir, "subdir/foo.built"))
+	assert.NoError(t, err, "expected subdir/foo.built to exist")
+}
+
+func TestRuleFile_Fallback(t *testing.T) {
+	// Test that a local Walkfile can delegate to parent by exiting with code 127
+	// Structure:
+	// tmpdir/
+	//   Walkfile        <- handles *.o generically
+	//   subdir/
+	//     Walkfile      <- handles "special" only, exits 127 for others
+	//     foo.o         <- should fall back to parent's *.o rule
+	//     special       <- handled by local Walkfile
+	tmpdir := t.TempDir()
+
+	// Parent Walkfile: handles *.o
+	parentWalkfile := filepath.Join(tmpdir, "Walkfile")
+	err := os.WriteFile(parentWalkfile, []byte(`#!/bin/bash
+phase=$1
+target=$2
+
+case $target in
+  *.o)
+    case $phase in
+      exec) touch "$target.from-parent" ;;
+    esac ;;
+  *) exit 200 ;;
+esac
+`), 0755)
+	assert.NoError(t, err)
+
+	// Create subdirectory
+	subdir := filepath.Join(tmpdir, "subdir")
+	err = os.Mkdir(subdir, 0755)
+	assert.NoError(t, err)
+
+	// Local Walkfile: handles "special" only, exits 127 for unknown targets
+	localWalkfile := filepath.Join(subdir, "Walkfile")
+	err = os.WriteFile(localWalkfile, []byte(`#!/bin/bash
+phase=$1
+target=$2
+
+case $target in
+  special)
+    case $phase in
+      exec) touch "$target.from-local" ;;
+    esac ;;
+  *) exit 200 ;;  # Signal: try parent Walkfile
+esac
+`), 0755)
+	assert.NoError(t, err)
+
+	// Test 1: "special" should be handled by local Walkfile
+	b := new(bytes.Buffer)
+	plan := newPlan()
+	plan.NewTarget = NewTarget(TargetOptions{
+		WorkingDir: tmpdir,
+		Stdout:     b,
+	})
+
+	err = plan.Plan(ctx, "subdir/special")
+	assert.NoError(t, err)
+	err = plan.Exec(ctx, NewSemaphore(0))
+	assert.NoError(t, err)
+
+	_, err = os.Stat(filepath.Join(subdir, "special.from-local"))
+	assert.NoError(t, err, "expected special.from-local to exist")
+
+	// Test 2: "foo.o" should fall back to parent Walkfile
+	plan = newPlan()
+	plan.NewTarget = NewTarget(TargetOptions{
+		WorkingDir: tmpdir,
+		Stdout:     b,
+	})
+
+	err = plan.Plan(ctx, "subdir/foo.o")
+	assert.NoError(t, err)
+	err = plan.Exec(ctx, NewSemaphore(0))
+	assert.NoError(t, err)
+
+	_, err = os.Stat(filepath.Join(tmpdir, "subdir/foo.o.from-parent"))
+	assert.NoError(t, err, "expected subdir/foo.o.from-parent to exist")
+}
+
+func TestRuleFile_LocalOverridesParent(t *testing.T) {
+	// Create a temp directory structure:
+	// tmpdir/
+	//   Walkfile        <- parent Walkfile
+	//   subdir/
+	//     Walkfile      <- local Walkfile (should be used)
+	//     target.txt
+	tmpdir := t.TempDir()
+
+	parentWalkfile := filepath.Join(tmpdir, "Walkfile")
+	err := os.WriteFile(parentWalkfile, []byte("#!/bin/bash\necho parent"), 0755)
+	assert.NoError(t, err)
+
+	subdir := filepath.Join(tmpdir, "subdir")
+	err = os.Mkdir(subdir, 0755)
+	assert.NoError(t, err)
+
+	localWalkfile := filepath.Join(subdir, "Walkfile")
+	err = os.WriteFile(localWalkfile, []byte("#!/bin/bash\necho local"), 0755)
+	assert.NoError(t, err)
+
+	targetPath := filepath.Join(subdir, "target.txt")
+
+	// RuleFile should find the local Walkfile first
+	found := RuleFile(targetPath)
+	assert.Equal(t, localWalkfile, found)
 }
 
 func clean(t testing.TB) {
