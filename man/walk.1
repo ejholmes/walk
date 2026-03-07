@@ -46,6 +46,16 @@ The \fIphase\fR (\fBdeps\fR or \fBexec\fR)\.
 The target path relative to the Walkfile's directory (e\.g\. \fBhello\.o\fR or \fBsubdir/hello\.o\fR if the Walkfile is in a parent directory)\.
 .P
 It's up to the \fBWalkfile\fR to determine what dependencies the target has, and how to execute it\.
+.P
+If a Walkfile exits with code \fB127\fR, walk(1) will try the next Walkfile up the directory tree\. This allows a local Walkfile to handle specific targets while delegating unknown targets to a parent Walkfile:
+.IP "" 4
+.nf
+case $target in
+  special) ;; # handle locally
+  *) exit 127 ;; # delegate to parent
+esac
+.fi
+.IP "" 0
 .SH "PHASES"
 walk(1) has two phases:
 .TP

@@ -230,6 +230,86 @@ esac
 	assert.NoError(t, err, "expected subdir/foo.built to exist")
 }
 
+func TestRuleFile_Fallback(t *testing.T) {
+	// Test that a local Walkfile can delegate to parent by exiting with code 127
+	// Structure:
+	// tmpdir/
+	//   Walkfile        <- handles *.o generically
+	//   subdir/
+	//     Walkfile      <- handles "special" only, exits 127 for others
+	//     foo.o         <- should fall back to parent's *.o rule
+	//     special       <- handled by local Walkfile
+	tmpdir := t.TempDir()
+
+	// Parent Walkfile: handles *.o
+	parentWalkfile := filepath.Join(tmpdir, "Walkfile")
+	err := os.WriteFile(parentWalkfile, []byte(`#!/bin/bash
+phase=$1
+target=$2
+
+case $target in
+  *.o)
+    case $phase in
+      exec) touch "$target.from-parent" ;;
+    esac ;;
+  *) exit 127 ;;
+esac
+`), 0755)
+	assert.NoError(t, err)
+
+	// Create subdirectory
+	subdir := filepath.Join(tmpdir, "subdir")
+	err = os.Mkdir(subdir, 0755)
+	assert.NoError(t, err)
+
+	// Local Walkfile: handles "special" only, exits 127 for unknown targets
+	localWalkfile := filepath.Join(subdir, "Walkfile")
+	err = os.WriteFile(localWalkfile, []byte(`#!/bin/bash
+phase=$1
+target=$2
+
+case $target in
+  special)
+    case $phase in
+      exec) touch "$target.from-local" ;;
+    esac ;;
+  *) exit 127 ;;  # Signal: try parent Walkfile
+esac
+`), 0755)
+	assert.NoError(t, err)
+
+	// Test 1: "special" should be handled by local Walkfile
+	b := new(bytes.Buffer)
+	plan := newPlan()
+	plan.NewTarget = NewTarget(TargetOptions{
+		WorkingDir: tmpdir,
+		Stdout:     b,
+	})
+
+	err = plan.Plan(ctx, "subdir/special")
+	assert.NoError(t, err)
+	err = plan.Exec(ctx, NewSemaphore(0))
+	assert.NoError(t, err)
+
+	_, err = os.Stat(filepath.Join(subdir, "special.from-local"))
+	assert.NoError(t, err, "expected special.from-local to exist")
+
+	// Test 2: "foo.o" should fall back to parent Walkfile
+	plan = newPlan()
+	plan.NewTarget = NewTarget(TargetOptions{
+		WorkingDir: tmpdir,
+		Stdout:     b,
+	})
+
+	err = plan.Plan(ctx, "subdir/foo.o")
+	assert.NoError(t, err)
+	err = plan.Exec(ctx, NewSemaphore(0))
+	assert.NoError(t, err)
+
+	_, err = os.Stat(filepath.Join(tmpdir, "subdir/foo.o.from-parent"))
+	assert.NoError(t, err, "expected subdir/foo.o.from-parent to exist")
+}
+
 func TestRuleFile_LocalOverridesParent(t *testing.T) {
 	// Create a temp directory structure:
 	// tmpdir/
