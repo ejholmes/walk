@@ -2,7 +2,7 @@
 .\" http://github.com/apjanke/ronn-ng/tree/0.10.1
 .TH "WALK" "1" "January 1980" ""
 .SH "NAME"
-\fBwalk\fR \- A fast, general purpose, graph based build and task execution utility\.
+\fBwalk\fR \- A fast, graph\-based build and task execution utility\.
 .SH "SYNOPSIS"
 \fBwalk\fR \fB\-\-help\fR
 .br
@@ -11,10 +11,13 @@
 .SH "DESCRIPTION"
 walk(1) is a small utility that can be used to execute tasks, or build programs from source\. It's similar to make(1) in many ways, but with some fundamental differences that make it vastly simpler, and arguably more powerful\.
 .P
-At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAG's are a magical data structure that allow you to easily express dependency trees\. You'll find DAG's everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, init systems \fIhttps://www\.freedesktop\.org/wiki/Software/systemd/\fR and more\. walk(1) provides a generic primitive to express a DAG as a set of targets (files) that depend on each other\.
+At the core of walk(1) is a Directed Acyclic Graph \fIhttps://en\.wikipedia\.org/wiki/Directed_acyclic_graph\fR (DAG)\. DAGs are a magical data structure that allow you to easily express dependency trees\. You'll find DAGs everywhere; in git \fIhttp://eagain\.net/articles/git\-for\-computer\-scientists/\fR, languages, infrastructure tools \fIhttps://github\.com/hashicorp/terraform/tree/master/dag\fR, init systems \fIhttps://www\.freedesktop\.org/wiki/Software/systemd/\fR and more\. walk(1) provides a generic primitive to express a DAG as a set of targets (files) that depend on each other\.
 .P
-walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css, sass, coffeescript, etc) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express it's dependencies can be built\.
+walk(1) can be used to build just about anything, from C/C++ programs to frontend applications (css, sass, coffeescript, etc) and infrastructure (CloudFormation, Terraform)\. Basically, anything that can express its dependencies can be built\.
 .SH "OPTIONS"
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show help message and exit\.
 .TP
 \fB\-v\fR
 Show stdout from the \fBWalkfile\fR when executing the \fBexec\fR phase\.
@@ -46,7 +49,7 @@ It's up to the \fBWalkfile\fR to determine what dependencies the target has, and
 .SH "PHASES"
 walk(1) has two phases:
 .TP
-\fBPlan\fR
+\fBDeps\fR
 In this phase, walk(1) executes the \fBWalkfile\fR with \fBdeps\fR as the first argument\. The \fBWalkfile\fR is expected to print a newline delimited list of files that the target depends on, relative to the target\. Internally, walk(1) builds a graph of all of the targets and their dependencies\.
 .TP
 \fBExec\fR
@@ -114,7 +117,7 @@ walk(1) executes all of the targets, starting with dependencies:
 
 .IP "" 0
 .P
-You can provide one or more targets as arguments to specify where to start execution from\. For example, if wanted to build just \fBhello\.o\fR and any of it's dependencies:
+You can provide one or more targets as arguments to specify where to start execution from\. For example, if you wanted to build just \fBhello\.o\fR and any of its dependencies:
 .IP "" 4
 .nf
 $ walk hello\.o
@@ -136,6 +139,6 @@ When walk(1) receives SIGINT or SIGTERM, it will forward these signals down to a
 .SH "BUGS"
 You can find a list of bugs at \fIhttps://github\.com/ejholmes/walk/issues\fR\. Please report any issues there\.
 .SH "COPYRIGHT"
-Walk is Copyright (C) 2017 Eric Holmes
+Walk is Copyright (C) 2017\-2026 Eric Holmes
 .SH "SEE ALSO"
 make(1), bash(1)

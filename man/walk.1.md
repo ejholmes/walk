@@ -1,4 +1,4 @@
-walk(1) -- A fast, general purpose, graph based build and task execution utility.
+walk(1) -- A fast, graph-based build and task execution utility.
 ==============================================================================================
 
 ## SYNOPSIS
@@ -13,9 +13,9 @@ from source. It's similar to make(1) in many ways, but with some fundamental
 differences that make it vastly simpler, and arguably more powerful.
 
 At the core of walk(1) is a [Directed Acyclic
-Graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) (DAG). DAG's are a
+Graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) (DAG). DAGs are a
 magical data structure that allow you to easily express dependency trees.
-You'll find DAG's everywhere; in
+You'll find DAGs everywhere; in
 [git](http://eagain.net/articles/git-for-computer-scientists/), languages,
 [infrastructure tools](https://github.com/hashicorp/terraform/tree/master/dag),
 [init systems](https://www.freedesktop.org/wiki/Software/systemd/) and more.
@@ -24,10 +24,13 @@ walk(1) provides a generic primitive to express a DAG as a set of targets
 
 walk(1) can be used to build just about anything, from C/C++ programs to
 frontend applications (css, sass, coffeescript, etc) and infrastructure
-(CloudFormation, Terraform). Basically, anything that can express it's
+(CloudFormation, Terraform). Basically, anything that can express its
 dependencies can be built.
 
 ## OPTIONS
+
+  * `-h`, `--help`:
+    Show help message and exit.
 
   * `-v`:
     Show stdout from the `Walkfile` when executing the **exec** phase.
@@ -83,7 +86,7 @@ how to execute it.
 
 walk(1) has two phases:
 
-  * `Plan`:
+  * `Deps`:
     In this phase, walk(1) executes the `Walkfile` with `deps` as the first
     argument. The `Walkfile` is expected to print a newline delimited list of
     files that the target depends on, relative to the target. Internally,
@@ -115,7 +118,7 @@ walk(1) may be better in certain scenarios:
     [attempts](http://blog.jgc.org/2006/04/rebuilding-when-hash-has-changed-not.html)
     to get around this handicap, but none that work well. walk(1) leaves
     conditional execution up to the Walkfile.
-   * `Recursiveness`:
+  * `Recursiveness`:
     Recursive make is generally a mistake. Whole papers have been [written
     about this topic](http://aegis.sourceforge.net/auug97.pdf). Because of
     walk(1)'s design, you can execute `walk` from any directory, and always get
@@ -163,7 +166,7 @@ Here's what happens within walk(1) when we execute this:
         $ Walkfile exec all
 
 You can provide one or more targets as arguments to specify where to start
-execution from. For example, if wanted to build just `hello.o` and any of it's
+execution from. For example, if you wanted to build just `hello.o` and any of its
 dependencies:
 
     $ walk hello.o
@@ -192,7 +195,7 @@ Please report any issues there.
 
 ## COPYRIGHT
 
-Walk is Copyright (C) 2017 Eric Holmes
+Walk is Copyright (C) 2017-2026 Eric Holmes
 
 ## SEE ALSO
 
