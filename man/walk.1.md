@@ -86,13 +86,13 @@ positional arguments:
 It's up to the `Walkfile` to determine what dependencies the target has, and
 how to execute it.
 
-If a Walkfile exits with code `127`, walk(1) will try the next Walkfile up the
+If a Walkfile exits with code `200`, walk(1) will try the next Walkfile up the
 directory tree. This allows a local Walkfile to handle specific targets while
 delegating unknown targets to a parent Walkfile:
 
     case $target in
       special) ;; # handle locally
-      *) exit 127 ;; # delegate to parent
+      *) exit 200 ;; # delegate to parent
     esac
 
 ## PHASES

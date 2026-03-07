@@ -252,7 +252,7 @@ case $target in
     case $phase in
       exec) touch "$target.from-parent" ;;
     esac ;;
-  *) exit 127 ;;
+  *) exit 200 ;;
 esac
 `), 0755)
 	assert.NoError(t, err)
@@ -273,7 +273,7 @@ case $target in
     case $phase in
       exec) touch "$target.from-local" ;;
     esac ;;
-  *) exit 127 ;;  # Signal: try parent Walkfile
+  *) exit 200 ;;  # Signal: try parent Walkfile
 esac
 `), 0755)
 	assert.NoError(t, err)

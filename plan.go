@@ -221,9 +221,9 @@ func (e *targetError) Error() string {
 	return fmt.Sprintf("%s: %v", e.target.Name(), e.err)
 }
 
-// ExitCodeFallback is the exit code that signals walk to try the next
+// ExitCodeDelegate is the exit code that signals walk to try the next
 // Walkfile in the inheritance chain.
-const ExitCodeFallback = 127
+const ExitCodeDelegate = 200
 
 // target is a Target implementation, that represents a file on disk, which may
 // be built by a rule.
@@ -240,7 +240,7 @@ type target struct {
 
 	// rulefileIdx is the index into rulefiles of the active Walkfile.
 	// This is set during Dependencies() when a Walkfile successfully handles
-	// the target (doesn't return ExitCodeFallback).
+	// the target (doesn't return ExitCodeDelegate).
 	rulefileIdx int
 
 	// The working directory.
@@ -315,7 +315,7 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 	}
 
 	// Try each Walkfile in order until one handles the target
-	// (doesn't return ExitCodeFallback).
+	// (doesn't return ExitCodeDelegate).
 	var lastErr error
 	for i := range t.rulefiles {
 		t.rulefileIdx = i
@@ -329,7 +329,7 @@ func (t *target) Dependencies(ctx context.Context) ([]string, error) {
 
 		if err := cmd.Run(); err != nil {
 			// Check if this is a fallback signal
-			if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == ExitCodeFallback {
+			if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == ExitCodeDelegate {
 				lastErr = err
 				continue // Try next Walkfile
 			}
