@@ -20,29 +20,11 @@ install() {
 #  3. Uploads all of the files, which are provided as positional arguments.
 release() {
   local tag=v$(cat VERSION)
-  local user=ejholmes
-  local repo=walk
 
-  if [ -z "$GITHUB_TOKEN" ]; then
-    >&2 echo "GITHUB_TOKEN is missing."
-    return 1
-  fi
+  # Create and push tag if it doesn't already exist (skipped in CI)
+  git tag ${tag} 2>/dev/null && git push && git push --tags
 
-  git tag ${tag} && git push && git push --tags
-
-  github-release release \
-    --user ${user} \
-    --repo ${repo} \
-    --tag ${tag}
-
-  for f in $@; do
-    github-release upload \
-      --user ${user} \
-      --repo ${repo} \
-      --tag ${tag} \
-      --name $(basename $f) \
-      --file $f
-  done
+  gh release create ${tag} --title "${tag}" --generate-notes "$@"
 }
 
 case $target in

@@ -31,10 +31,13 @@ go test ./...
 
 ## Releasing
 
-Bump the version number in [VERSION](./VERSION), update CHANGELOG.md, then run:
+Bump the version number in [VERSION](./VERSION), then run:
 
 ```console
 $ walk -v version.go
+$ git add VERSION version.go
 $ git commit -m "Bump version"
-$ walk -v release
+$ git tag vX.X.X && git push && git push --tags
 ```
+
+The [release workflow](.github/workflows/release.yml) runs `walk -v release` to build and publish artifacts.
