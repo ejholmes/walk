@@ -2,11 +2,11 @@
 
 [![CI](https://github.com/ejholmes/walk/actions/workflows/ci.yml/badge.svg)](https://github.com/ejholmes/walk/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ejholmes/walk)](https://goreportcard.com/report/github.com/ejholmes/walk)
-[![Latest Version](https://img.shields.io/github/release/ejholmes/walk.svg?style=flat?maxAge=86400)](https://github.com/ejholmes/walk/releases)
+[![Latest Version](https://img.shields.io/github/release/ejholmes/walk.svg?style=flat&maxAge=86400)](https://github.com/ejholmes/walk/releases)
 
-`walk` is a fast, general purpose, graph based build and task execution utility.
+`walk` is a fast, graph-based build and task execution tool.
 
-Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https://github.com/apenwarr/redo).
+Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https://github.com/apenwarr/redo). Unlike make, walk doesn't have a DSL—your Walkfile is just an executable script. This makes it easy to compose with existing UNIX tools and debug with standard techniques.
 
 ![](./docs/walk.gif)
 
@@ -16,7 +16,6 @@ Heavily inspired by [make](https://www.gnu.org/software/make/) and [redo](https:
 * Graph based dependency management.
 * Maximum composability with existing UNIX tooling.
 * Describe targets and their dependencies as simple executables.
-* Universal execution; execute `walk` from any directory.
 
 ## Installation
 
@@ -27,6 +26,32 @@ $ go install github.com/ejholmes/walk@latest
 ```
 
 Or grab the latest release from https://github.com/ejholmes/walk/releases.
+
+## Quick Start
+
+Create an executable file called `Walkfile`:
+
+```bash
+#!/bin/bash
+
+phase=$1   # "deps" or "exec"
+target=$2  # the target name
+
+case $target in
+  hello)
+    case $phase in
+      exec) echo "Hello, world!" ;;
+    esac ;;
+esac
+```
+
+Run it:
+
+```console
+$ chmod +x Walkfile
+$ walk hello
+ok	hello
+```
 
 ## Usage
 
@@ -137,6 +162,10 @@ digraph {
 }
 ```
 
-And that's it. Wait, that's it? That's it. `walk` is quite simply, just syntactic sugar over executing a binary as a graph.
+And that's it—`walk` is syntactic sugar over executing a binary as a dependency graph.
 
 See also [`man walk`](http://ejholmes.github.io/walk/).
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and guidelines.
