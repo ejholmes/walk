@@ -170,6 +170,16 @@ positional arguments:</p>
 <p>It's up to the <code>Walkfile</code> to determine what dependencies the target has, and
 how to execute it.</p>
 
+<p>If a Walkfile exits with code <code>200</code>, <a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> will try the next Walkfile up the
+directory tree. This allows a local Walkfile to handle specific targets while
+delegating unknown targets to a parent Walkfile:</p>
+
+<pre><code>case $target in
+  special) ;; # handle locally
+  *) exit 200 ;; # delegate to parent
+esac
+</code></pre>
+
 <h2 id="PHASES">PHASES</h2>
 
 <p><a class="man-ref" href="http://ejholmes.github.io/walk">walk<span class="s">(1)</span></a> has two phases:</p>
