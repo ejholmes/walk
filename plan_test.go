@@ -231,12 +231,12 @@ esac
 }
 
 func TestRuleFile_Fallback(t *testing.T) {
-	// Test that a local Walkfile can delegate to parent by exiting with code 127
+	// Test that a local Walkfile can delegate to parent by exiting with code 200
 	// Structure:
 	// tmpdir/
 	//   Walkfile        <- handles *.o generically
 	//   subdir/
-	//     Walkfile      <- handles "special" only, exits 127 for others
+	//     Walkfile      <- handles "special" only, exits 200 for others
 	//     foo.o         <- should fall back to parent's *.o rule
 	//     special       <- handled by local Walkfile
 	tmpdir := t.TempDir()
@@ -262,7 +262,7 @@ esac
 	err = os.Mkdir(subdir, 0755)
 	assert.NoError(t, err)
 
-	// Local Walkfile: handles "special" only, exits 127 for unknown targets
+	// Local Walkfile: handles "special" only, exits 200 for unknown targets
 	localWalkfile := filepath.Join(subdir, "Walkfile")
 	err = os.WriteFile(localWalkfile, []byte(`#!/bin/bash
 phase=$1

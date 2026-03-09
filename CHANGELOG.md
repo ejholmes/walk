@@ -6,7 +6,7 @@
 
 * Walkfile inheritance: walk(1) now searches up the directory tree for a Walkfile, allowing a single Walkfile at the project root to handle targets in any subdirectory. This eliminates the need to create a Walkfile in every directory.
 
-* Walkfile fallback (exit code 200): A local Walkfile can delegate to a parent Walkfile by exiting with code 127. This enables composition where a local Walkfile handles specific targets while inheriting generic rules from a parent:
+* Walkfile fallback (exit code 200): A local Walkfile can delegate to a parent Walkfile by exiting with code 200. This enables composition where a local Walkfile handles specific targets while inheriting generic rules from a parent:
   ```bash
   case $target in
     special) ;; # handle locally
