@@ -1,5 +1,45 @@
 # Changelog
 
+## Unreleased
+
+**Features**
+
+* Walkfile inheritance: walk(1) now searches up the directory tree for a Walkfile, allowing a single Walkfile at the project root to handle targets in any subdirectory. This eliminates the need to create a Walkfile in every directory.
+
+* Walkfile fallback (exit code 200): A local Walkfile can delegate to a parent Walkfile by exiting with code 200. This enables composition where a local Walkfile handles specific targets while inheriting generic rules from a parent:
+  ```bash
+  case $target in
+    special) ;; # handle locally
+    *) exit 200 ;; # delegate to parent
+  esac
+  ```
+
+**Breaking Changes**
+
+* **Target name (`$2`) format changed**: When a Walkfile is found in a parent directory, `$2` now contains the path relative to the Walkfile's directory (e.g., `subdir/foo.o` instead of `foo.o`). Walkfiles that assume `$2` is a simple filename may need adjustment:
+  ```bash
+  # Before: worked when $2 was "foo.o"
+  echo ${target}.c
+
+  # After: use basename or adjust patterns
+  echo ${target%.o}.c  # works for both "foo.o" and "subdir/foo.o"
+  ```
+
+* **Working directory changed**: The Walkfile now runs from its own directory, not the target's directory. Commands using relative paths like `ls *.c` should be updated to use paths relative to the Walkfile.
+
+* **Unintended Walkfile discovery**: Directories that previously had no Walkfile (treating targets as static files) may now inherit a Walkfile from a parent directory. If the parent Walkfile doesn't handle the target, this will produce an error instead of a no-op.
+
+**Migration Guide**
+
+1. If your Walkfile uses `$2` directly as a filename, consider using `basename "$target"` or updating patterns to handle paths.
+
+2. If you rely on "no Walkfile means static file" behavior in a subdirectory, add an explicit case to the parent Walkfile:
+   ```bash
+   subdir/*) ;;  # treat as static files
+   ```
+
+3. Review any Walkfiles higher in your directory tree that might now be discovered unexpectedly.
+
 ## 0.3.3 (2017-09-20)
 
 **Improvements**
